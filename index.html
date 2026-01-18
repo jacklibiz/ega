@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vicbuild - Small Second Dwelling Specialists</title>
@@ -10,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet">
 
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -163,6 +161,40 @@
                 height: 200px;
             }
         }
+
+        /* Blueprint gallery styling */
+        .blueprint-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .blueprint-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Granny flat gallery */
+        .granny-flat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        @media (max-width: 1024px) {
+            .granny-flat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
+            .granny-flat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* GoHighLevel form placeholder */
+        .ghl-form-placeholder {
+            min-height: 400px;
+        }
     </style>
 
     <script>
@@ -195,16 +227,12 @@
                 <!-- Logo -->
                 <div class="flex-shrink-0">
                     <a href="#">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&h=280" alt="Vicbuild Logo" class="h-12 md:h-14 w-auto">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&amp;h=280" alt="Vicbuild Logo" class="h-12 md:h-14 w-auto">
                     </a>
                 </div>
 
                 <!-- Desktop Nav/Contact -->
                 <div class="hidden md:flex items-center space-x-6">
-                    <div class="flex flex-col text-right">
-                        <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Call or SMS us</span>
-                        <a href="tel:0401064336" class="font-bold text-lg hover:text-vicGreen transition font-mono">0401 064 336</a>
-                    </div>
                     <button onclick="scrollToForm()" class="bg-vicGreen hover:bg-vicGreenDark text-white px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         Get My Free Quote
                     </button>
@@ -212,12 +240,8 @@
 
                 <!-- Mobile Menu/Contact -->
                 <div class="md:hidden flex items-center gap-3">
-                    <a href="tel:0401064336" class="flex flex-col text-right">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase">Call Now</span>
-                        <span class="font-bold text-sm text-vicDark font-mono">0401 064 336</span>
-                    </a>
-                    <button onclick="scrollToForm()" class="bg-vicGreen text-white px-3 py-2 rounded-lg text-xs font-bold uppercase">
-                        Quote
+                    <button onclick="scrollToForm()" class="bg-vicGreen text-white px-4 py-2 rounded-lg text-xs font-bold uppercase">
+                        Get Quote
                     </button>
                 </div>
             </div>
@@ -228,7 +252,7 @@
     <section class="relative pt-24 md:pt-0 min-h-screen flex items-center overflow-hidden">
         <!-- Background Image -->
         <div class="absolute inset-0 z-0">
-            <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&h=2041" alt="Vicbuild Project" class="w-full h-full object-cover">
+            <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&amp;h=2041" alt="Vicbuild Project" class="w-full h-full object-cover">
             <div class="absolute inset-0 hero-overlay"></div>
         </div>
 
@@ -258,50 +282,15 @@
                 </div>
             </div>
 
-            <!-- Right Content: The Form -->
+            <!-- Right Content: The Form Placeholder -->
             <div id="hero-form" class="w-full max-w-md mx-auto lg:ml-auto bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-vicGreen/30">
                 <div class="bg-vicDark p-5 text-center">
                     <h3 class="text-white font-bold text-xl uppercase tracking-wide">Get Your Free Quote</h3>
                     <p class="text-slate-400 text-xs mt-1">60 Second Process - No Obligation</p>
                 </div>
-                <div class="p-6 md:p-8">
-                    <form id="heroForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">I am interested in...</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="interest" class="peer sr-only">
-                                    <div class="p-3 border border-slate-200 rounded-lg text-center text-sm font-semibold text-slate-600 peer-checked:bg-vicGreen/10 peer-checked:border-vicGreen peer-checked:text-vicGreen transition">
-                                        <i class="fa-solid fa-chart-line block mb-1"></i> Investment
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="interest" class="peer sr-only">
-                                    <div class="p-3 border border-slate-200 rounded-lg text-center text-sm font-semibold text-slate-600 peer-checked:bg-vicGreen/10 peer-checked:border-vicGreen peer-checked:text-vicGreen transition">
-                                        <i class="fa-solid fa-house-user block mb-1"></i> Family Home
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name</label>
-                            <input type="text" required class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:border-vicGreen focus:ring-2 focus:ring-vicGreen/20 transition bg-slate-50 text-base" placeholder="Enter your name">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
-                            <input type="tel" required class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:border-vicGreen focus:ring-2 focus:ring-vicGreen/20 transition bg-slate-50 text-base" placeholder="0400 000 000">
-                        </div>
-
-                        <button type="submit" class="w-full bg-vicGreen hover:bg-vicGreenDark text-white font-bold py-4 rounded-lg uppercase tracking-wide transition shadow-lg transform active:scale-95 text-lg">
-                            Get My Free Quote
-                        </button>
-
-                        <div class="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-2">
-                            <i class="fa-solid fa-lock"></i> Your data is secure & encrypted.
-                        </div>
-                    </form>
+                <div class="p-6 md:p-8 ghl-form-placeholder">
+                    <!-- GoHighLevel Form Embed Area -->
+                    <!-- Paste your GoHighLevel form embed code here -->
                 </div>
             </div>
         </div>
@@ -431,7 +420,7 @@
                             </div>
                             <div class="w-4 h-4 bg-vicGreen rounded-full mb-4 ring-4 ring-white shadow-md"></div>
                             <h4 class="font-bold text-vicDark text-lg mb-2">Free Quote</h4>
-                            <p class="text-sm text-slate-500">We check sewers & easements remotely. No site visit needed.</p>
+                            <p class="text-sm text-slate-500">We check sewers &amp; easements remotely. No site visit needed.</p>
                         </div>
 
                         <!-- Step 2 -->
@@ -461,7 +450,7 @@
                             </div>
                             <div class="w-4 h-4 bg-vicDark rounded-full mb-4 ring-4 ring-white shadow-md"></div>
                             <h4 class="font-bold text-vicDark text-lg mb-2">The Build</h4>
-                            <p class="text-sm text-slate-500">Rapid construction schedule managed by Ahmed & team.</p>
+                            <p class="text-sm text-slate-500">Rapid construction schedule managed by Ahmed &amp; team.</p>
                         </div>
 
                         <!-- Step 5 -->
@@ -489,7 +478,7 @@
                             </div>
                             <div class="pt-2">
                                 <h4 class="font-bold text-vicDark text-lg mb-1">1. Free Quote</h4>
-                                <p class="text-sm text-slate-500">We check sewers & easements remotely.</p>
+                                <p class="text-sm text-slate-500">We check sewers &amp; easements remotely.</p>
                             </div>
                         </div>
 
@@ -522,7 +511,7 @@
                             </div>
                             <div class="pt-2">
                                 <h4 class="font-bold text-vicDark text-lg mb-1">4. The Build</h4>
-                                <p class="text-sm text-slate-500">Rapid construction by Ahmed & team.</p>
+                                <p class="text-sm text-slate-500">Rapid construction by Ahmed &amp; team.</p>
                             </div>
                         </div>
 
@@ -543,16 +532,16 @@
             <!-- Process Images -->
             <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&h=2041" alt="Project Interior" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&amp;h=2041" alt="Project Interior" class="w-full h-full object-cover">
                 </div>
                 <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&h=2041" alt="Project Exterior" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&amp;h=2041" alt="Project Exterior" class="w-full h-full object-cover">
                 </div>
                 <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&h=2041" alt="Kitchen" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&amp;h=2041" alt="Kitchen" class="w-full h-full object-cover">
                 </div>
                 <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&h=2041" alt="Dining" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&amp;h=2041" alt="Dining" class="w-full h-full object-cover">
                 </div>
             </div>
 
@@ -561,6 +550,59 @@
                 <button onclick="scrollToForm()" class="inline-flex items-center gap-2 bg-vicGreen hover:bg-vicGreenDark text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide transition shadow-lg">
                     Start Step 1 - Get Your Free Quote <i class="fa-solid fa-arrow-right"></i>
                 </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blueprints & Granny Flat Images Section -->
+    <section class="py-20 bg-slate-50" id="blueprints-gallery">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Blueprints -->
+            <div class="mb-16">
+                <div class="text-center mb-10">
+                    <span class="inline-block bg-vicDark/10 text-vicDark px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Floor Plans</span>
+                    <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">Professional Blueprints</h2>
+                    <p class="text-slate-600 mt-3">Detailed architectural plans for our premium granny flats</p>
+                </div>
+
+                <div class="blueprint-grid">
+                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl bg-white p-4 border border-slate-200">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/0a91b55674903d5cc4355561ccbf3178aca8c95f6021937e9173d42ae32c54d2?w=2245&h=1587" alt="Blueprint 1 - Floor Plan" class="w-full h-auto object-contain rounded-lg">
+                    </div>
+                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl bg-white p-4 border border-slate-200">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/9423ad0c2382b930f6732bb43857d232a4923a7a7d932c5d627cbd78b5468756?w=2245&h=1587" alt="Blueprint 2 - Elevation Views" class="w-full h-auto object-contain rounded-lg">
+                    </div>
+                </div>
+                <p class="text-center text-slate-500 mt-6 text-sm italic">
+                    <i class="fa-solid fa-file-lines mr-2"></i>And more detailed plans available upon consultation...
+                </p>
+            </div>
+
+            <!-- Granny Flat Images -->
+            <div>
+                <div class="text-center mb-10">
+                    <span class="inline-block bg-vicGreen/10 text-vicGreen px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Visualisations</span>
+                    <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">Granny Flat Designs</h2>
+                    <p class="text-slate-600 mt-3">See what your new dwelling could look like</p>
+                </div>
+
+                <div class="granny-flat-grid">
+                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/45f56595e768be5a8e154660ecb039a389b86cd956b58dbe15b53db8ed75b0ee?w=2560&h=1333" alt="Granny Flat Exterior" class="w-full h-full object-cover">
+                    </div>
+                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/e6d7b9876c8c3e1b41bf3e72616b6c2b7f945288a289b27e3ab97309e59761e7?w=1920&h=1000" alt="Granny Flat Kitchen" class="w-full h-full object-cover">
+                    </div>
+                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/140bdc6e749826c9c907f65d6a3058b9bca138e13104e067e6921c94ff58199b?w=1920&h=1000" alt="Granny Flat Bedroom" class="w-full h-full object-cover">
+                    </div>
+                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/940111be2ef4829546fac94b03ee7d03f667458e53c6db889c1ea62a95a83138?w=1920&h=1000" alt="Granny Flat Living" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <p class="text-center text-slate-500 mt-6 text-sm italic">
+                    <i class="fa-solid fa-images mr-2"></i>And more design options to explore...
+                </p>
             </div>
         </div>
     </section>
@@ -578,10 +620,10 @@
             <div class="gallery-grid">
                 <!-- Large Featured Image -->
                 <div class="gallery-item img-zoom rounded-2xl overflow-hidden shadow-xl relative group">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&h=2041" alt="Featured Project" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&amp;h=2041" alt="Featured Project" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
                         <div>
-                            <p class="text-white font-bold text-lg">Premium Kitchen & Dining</p>
+                            <p class="text-white font-bold text-lg">Premium Kitchen &amp; Dining</p>
                             <p class="text-white/70 text-sm">Modern open-plan living</p>
                         </div>
                     </div>
@@ -589,19 +631,19 @@
 
                 <!-- Smaller Images -->
                 <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/bce81ea604594ea831796529614777d298f5921ac5b7ec6abc57cca8935c2227?w=3062&h=2041" alt="Dining Room" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/bce81ea604594ea831796529614777d298f5921ac5b7ec6abc57cca8935c2227?w=3062&amp;h=2041" alt="Dining Room" class="w-full h-full object-cover">
                 </div>
                 <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/4359b6076f7f584d51969eb0724383cd5d451ba47bb3561707167c6624ca59e9?w=3062&h=2041" alt="Kitchen" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/4359b6076f7f584d51969eb0724383cd5d451ba47bb3561707167c6624ca59e9?w=3062&amp;h=2041" alt="Kitchen" class="w-full h-full object-cover">
                 </div>
                 <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&h=2041" alt="Modern Exterior" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&amp;h=2041" alt="Modern Exterior" class="w-full h-full object-cover">
                 </div>
                 <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/76d2bfbb288f6c23a9749a95fee83bc247b7fa61970c20eaa6de081c94f96c0a?w=3062&h=2041" alt="Brick Exterior" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/76d2bfbb288f6c23a9749a95fee83bc247b7fa61970c20eaa6de081c94f96c0a?w=3062&amp;h=2041" alt="Brick Exterior" class="w-full h-full object-cover">
                 </div>
                 <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b06468217c0267d7dfb5d08cc21d0928349ba61adf256a9092fca02020b4bb23?w=3062&h=2041" alt="Brick House" class="w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/b06468217c0267d7dfb5d08cc21d0928349ba61adf256a9092fca02020b4bb23?w=3062&amp;h=2041" alt="Brick House" class="w-full h-full object-cover">
                 </div>
             </div>
         </div>
@@ -617,7 +659,7 @@
                     <h2 class="font-display text-4xl md:text-5xl font-black text-vicDark mb-6 leading-tight">We Know What We're Doing.</h2>
                     <div class="w-20 h-1.5 bg-vicGreen mb-6"></div>
                     <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                        Vicbuild isn't just a granny flat builder. We are a registered Domestic & Commercial Builder with over <strong class="text-vicDark">15 years of experience</strong> delivering major projects up to <strong class="text-vicDark">$20 Million</strong>.
+                        Vicbuild isn't just a granny flat builder. We are a registered Domestic &amp; Commercial Builder with over <strong class="text-vicDark">15 years of experience</strong> delivering major projects up to <strong class="text-vicDark">$20 Million</strong>.
                     </p>
                     <p class="text-slate-500 mb-8">
                         From complex commercial fit-outs like the Burwood Brickworks Medical Centre to multi-unit developments in Punt Rd. We bring big-build precision to your backyard project.
@@ -650,16 +692,16 @@
                 <!-- Image Collage -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-64">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&h=2041" alt="Vicbuild Sign" class="w-full h-full object-cover">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&amp;h=2041" alt="Vicbuild Sign" class="w-full h-full object-cover">
                     </div>
                     <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-64 mt-8">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&h=2041" alt="Kitchen Project" class="w-full h-full object-cover">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&amp;h=2041" alt="Kitchen Project" class="w-full h-full object-cover">
                     </div>
                     <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-48 -mt-4">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&h=2041" alt="Living Space" class="w-full h-full object-cover">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&amp;h=2041" alt="Living Space" class="w-full h-full object-cover">
                     </div>
                     <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-48 mt-4">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&h=2041" alt="Modern Kitchen" class="w-full h-full object-cover">
+                        <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&amp;h=2041" alt="Modern Kitchen" class="w-full h-full object-cover">
                     </div>
                 </div>
             </div>
@@ -672,7 +714,7 @@
             <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col lg:flex-row">
                 <!-- Visual Side -->
                 <div class="lg:w-1/2 relative min-h-[400px]">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&h=2041" alt="Interior View" class="absolute inset-0 w-full h-full object-cover">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&amp;h=2041" alt="Interior View" class="absolute inset-0 w-full h-full object-cover">
                     <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8">
                         <span class="bg-vicGreen text-white px-3 py-1 text-sm font-bold rounded uppercase mb-2 inline-block">Most Popular</span>
                         <h3 class="text-3xl font-bold text-white">The Vicbuild 60 SSD Executive</h3>
@@ -690,7 +732,7 @@
                                 <i class="fa-solid fa-bed text-xl"></i>
                             </div>
                             <div>
-                                <strong class="block text-slate-800">2 Generous Bedrooms</strong>
+                                <strong class="block text-slate-800">1-2 Generous Bedrooms</strong>
                                 <span class="text-sm text-slate-500">Fits Queen beds, not bunks.</span>
                             </div>
                         </div>
@@ -709,7 +751,7 @@
                             </div>
                             <div>
                                 <strong class="block text-slate-800">6-Star Energy Rating</strong>
-                                <span class="text-sm text-slate-500">Keeps tenants warm & bills low.</span>
+                                <span class="text-sm text-slate-500">Keeps tenants warm &amp; bills low.</span>
                             </div>
                         </div>
                         <div class="flex items-start gap-4">
@@ -718,7 +760,7 @@
                             </div>
                             <div>
                                 <strong class="block text-slate-800">Full Turnkey Finish</strong>
-                                <span class="text-sm text-slate-500">Flooring, painting & lights included.</span>
+                                <span class="text-sm text-slate-500">Flooring, painting &amp; lights included.</span>
                             </div>
                         </div>
                     </div>
@@ -773,7 +815,7 @@
                                     <i class="fa-solid fa-xmark text-white text-lg"></i>
                                 </div>
                                 <div>
-                                    <span class="font-bold text-slate-800 block">Hidden "Site Costs" & Variations</span>
+                                    <span class="font-bold text-slate-800 block">Hidden "Site Costs" &amp; Variations</span>
                                     <span class="text-sm text-slate-600">Price keeps going up</span>
                                 </div>
                             </li>
@@ -791,7 +833,7 @@
                                     <i class="fa-solid fa-xmark text-white text-lg"></i>
                                 </div>
                                 <div>
-                                    <span class="font-bold text-slate-800 block">Stressful & Unpredictable</span>
+                                    <span class="font-bold text-slate-800 block">Stressful &amp; Unpredictable</span>
                                     <span class="text-sm text-slate-600">You never know what's next</span>
                                 </div>
                             </li>
@@ -967,12 +1009,12 @@
     <footer class="bg-vicDark text-slate-400 py-12 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left">
-                <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&h=280" alt="Vicbuild Logo" class="h-10 w-auto mb-3 mx-auto md:mx-0 brightness-0 invert">
+                <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&amp;h=280" alt="Vicbuild Logo" class="h-10 w-auto mb-3 mx-auto md:mx-0 brightness-0 invert">
                 <p class="text-sm">Vicbuild Developments Pty Ltd.<br>Registered Building Practitioner: CDB-U 53543</p>
             </div>
 
             <div class="text-sm text-center md:text-right">
-                <p>&copy; 2024 Vicbuild. All rights reserved.</p>
+                <p>© 2024 Vicbuild. All rights reserved.</p>
                 <div class="flex gap-4 justify-center md:justify-end mt-2">
                     <a href="#" class="hover:text-white transition">Privacy Policy</a>
                     <a href="#" class="hover:text-white transition">Terms of Service</a>
@@ -1018,13 +1060,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Form submission
-        document.getElementById('heroForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            showSuccessModal();
-            this.reset();
-        });
-
         // Close modal on click outside
         document.getElementById('successModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -1040,6 +1075,7 @@
             }
         };
     </script>
-</body>
-</html>
 
+
+
+</body></html>
