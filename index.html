@@ -1,1081 +1,554 @@
-<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vicbuild - Small Second Dwelling Specialists</title>
-    <meta name="description" content="Build a fully compliant 60sqm home in your backyard. Vicbuild specializes in high-quality SSD builds for investors and families.">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Playfair+Display:wght@700;800;900&amp;display=swap" rel="stylesheet">
-
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <title>3D Interactive Electron Orbital Visualizer</title>
     <style>
         :root {
-            --vic-dark: #1a1a1a;
-            --vic-green: #8dc63f;
-            --vic-green-dark: #7ab336;
-            --vic-orange: #ea580c;
-            --vic-light: #f8fafc;
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.95);
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --s-color: #ef4444; /* Red for s */
+            --p-color: #eab308; /* Yellow for p */
+            --d-color: #3b82f6; /* Blue for d */
         }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            scroll-behavior: smooth;
+        body { margin: 0; overflow: hidden; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
+        
+        /* Layout */
+        #container { display: flex; height: 100vh; width: 100vw; }
+        
+        /* Sidebar */
+        #sidebar {
+            width: 320px;
+            background: var(--panel-bg);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
         }
 
-        .font-display {
-            font-family: 'Playfair Display', serif;
+        h1 { font-size: 1.2rem; margin: 0 0 10px 0; color: var(--accent-color); }
+        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+
+        /* Controls */
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            color: white;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            cursor: pointer;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Aufbau Diagram Layout */
+        .aufbau-container {
+            display: flex;
+            flex-direction: column-reverse; /* Bottom up */
+            gap: 10px;
+            padding: 10px 0;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+
+        .shell-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #8dc63f;
+
+        .shell-label { font-weight: bold; width: 20px; font-size: 0.8rem; color: #64748b; }
+
+        .subshell-group { display: flex; gap: 4px; }
+
+        /* Orbital Buttons */
+        .orbital-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
             border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #7ab336;
-        }
-
-        /* Review Slider */
-        .scrolling-wrapper {
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        .scrolling-wrapper::-webkit-scrollbar {
-            display: none;
-        }
-
-        .hero-overlay {
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(26, 26, 26, 0.85) 40%, rgba(26, 26, 26, 0.6) 100%);
-        }
-
-        /* Modal Transition */
-        .modal {
-            transition: opacity 0.3s ease-in-out;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Process Flow Line */
-        .process-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #8dc63f 0%, #7ab336 100%);
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-
-        @media (max-width: 768px) {
-            .process-line {
-                top: 0;
-                bottom: 0;
-                left: 50%;
-                right: auto;
-                width: 4px;
-                height: 100%;
-                transform: translateX(-50%);
-            }
-        }
-
-        /* Animated gradient border */
-        .gradient-border {
+            background: #334155;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            background: linear-gradient(white, white) padding-box,
-                        linear-gradient(135deg, #8dc63f, #ea580c) border-box;
-            border: 3px solid transparent;
         }
 
-        /* Image hover zoom */
-        .img-zoom {
-            overflow: hidden;
-        }
-        .img-zoom img {
-            transition: transform 0.5s ease;
-        }
-        .img-zoom:hover img {
-            transform: scale(1.08);
+        .orbital-btn:hover { background: #475569; }
+        
+        .orbital-btn.active {
+            box-shadow: 0 0 8px currentColor;
+            color: white;
+            font-weight: bold;
         }
 
-        /* Comparison card styling */
-        .comparison-bad {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        }
-        .comparison-good {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        /* Specific Colors for Active State */
+        .btn-s.active { background-color: var(--s-color); }
+        .btn-p.active { background-color: var(--p-color); }
+        .btn-d.active { background-color: var(--d-color); }
+
+        /* Tooltip for granular selection */
+        .sub-selector {
+            display: none;
+            position: absolute;
+            top: 0; left: 40px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 5px;
+            border-radius: 4px;
+            z-index: 20;
+            width: 120px;
         }
 
-        /* Stagger animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease forwards;
+        .sub-selector.show { display: block; }
+        
+        .axis-check {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            margin: 2px 0;
+            cursor: pointer;
         }
 
-        /* Gallery grid */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 250px);
-            gap: 1rem;
-        }
-        .gallery-grid .gallery-item:first-child {
-            grid-column: span 2;
-            grid-row: span 2;
-        }
-        @media (max-width: 768px) {
-            .gallery-grid {
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: auto;
-            }
-            .gallery-grid .gallery-item:first-child {
-                grid-column: span 2;
-                grid-row: span 1;
-            }
-            .gallery-grid .gallery-item {
-                height: 200px;
-            }
-        }
+        /* Legend */
+        .legend { font-size: 0.8rem; color: #94a3b8; margin-top: auto; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
 
-        /* Blueprint gallery styling */
-        .blueprint-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-        @media (max-width: 768px) {
-            .blueprint-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* 3D Area */
+        #canvas-container { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
+        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
 
-        /* Granny flat gallery */
-        .granny-flat-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-        }
-        @media (max-width: 1024px) {
-            .granny-flat-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 640px) {
-            .granny-flat-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* GoHighLevel form placeholder */
-        .ghl-form-placeholder {
-            min-height: 400px;
-        }
     </style>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        vicDark: '#1a1a1a',
-                        vicGreen: '#8dc63f',
-                        vicGreenDark: '#7ab336',
-                        vicOrange: '#ea580c',
-                        vicLight: '#f8fafc',
-                    }
-                }
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
             }
         }
     </script>
 </head>
-<body class="text-slate-800 bg-white antialiased pt-10">
+<body>
 
-    <!-- Announcement Bar -->
-    <div class="fixed top-0 left-0 w-full h-10 bg-vicGreen z-[60] flex items-center justify-center text-white text-xs font-bold uppercase tracking-wide px-2 text-center">
-        <i class="fa-solid fa-clock mr-2"></i> Guaranteed Response within 1 hr during working hours
-    </div>
-
-    <!-- Sticky Header -->
-    <header class="fixed top-10 w-full z-50 bg-white/98 backdrop-blur-md shadow-sm border-b border-slate-100 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <!-- Logo -->
-                <div class="flex-shrink-0">
-                    <a href="#">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&amp;h=280" alt="Vicbuild Logo" class="h-12 md:h-14 w-auto">
-                    </a>
-                </div>
-
-                <!-- Desktop Nav/Contact -->
-                <div class="hidden md:flex items-center space-x-6">
-                    <button onclick="scrollToForm()" class="bg-vicGreen hover:bg-vicGreenDark text-white px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                        Get My Free Quote
-                    </button>
-                </div>
-
-                <!-- Mobile Menu/Contact -->
-                <div class="md:hidden flex items-center gap-3">
-                    <button onclick="scrollToForm()" class="bg-vicGreen text-white px-4 py-2 rounded-lg text-xs font-bold uppercase">
-                        Get Quote
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="relative pt-24 md:pt-0 min-h-screen flex items-center overflow-hidden">
-        <!-- Background Image -->
-        <div class="absolute inset-0 z-0">
-            <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&amp;h=2041" alt="Vicbuild Project" class="w-full h-full object-cover">
-            <div class="absolute inset-0 hero-overlay"></div>
+<div id="container">
+    <div id="sidebar">
+        <h1>Orbital Visualizer</h1>
+        
+        <div>
+            <h2>Atom Selector</h2>
+            <select id="element-select">
+                <option value="0">Select an Element (1-20)...</option>
+                </select>
         </div>
 
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-12 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-            <!-- Left Content -->
-            <div class="max-w-2xl">
-                <!-- Google Reviews Badge -->
-                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-6">
-                    <div class="flex text-yellow-400 text-sm">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <span class="text-white font-bold text-sm">5.0 Google Reviews</span>
+        <div>
+            <h2>Configuration Map (Aufbau)</h2>
+            <p style="font-size: 0.75rem; color:#64748b; margin-top:-5px;">Click to toggle. Hover for details.</p>
+            <div class="aufbau-container" id="aufbau-grid">
                 </div>
-
-                <h1 class="font-display text-4xl md:text-6xl font-black text-white leading-tight mb-6">
-                    The "Australian Dream" Is Dead.<br>
-                    <span class="text-vicGreen">Here Is The New One.</span>
-                </h1>
-                <p class="text-lg md:text-xl text-slate-300 mb-8 font-light leading-relaxed">
-                    Whether you need to <strong class="text-white">help your loved ones escape the rental trap</strong> or generate <strong class="text-white">$400+/week</strong> from your backyard. We build premium 60sqm homes without the Council headache.
-                </p>
-
-                <!-- Mobile Only Arrow -->
-                <div class="md:hidden text-center text-white/50 text-sm animate-bounce mb-2">
-                    Start your free quote below <i class="fa-solid fa-arrow-down ml-1"></i>
-                </div>
-            </div>
-
-            <!-- Right Content: The Form Placeholder -->
-            <div id="hero-form" class="w-full max-w-md mx-auto lg:ml-auto bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-vicGreen/30">
-                <div class="bg-vicDark p-5 text-center">
-                    <h3 class="text-white font-bold text-xl uppercase tracking-wide">Get Your Free Quote</h3>
-                    <p class="text-slate-400 text-xs mt-1">60 Second Process - No Obligation</p>
-                </div>
-                <div class="p-6 md:p-8 ghl-form-placeholder">
-                    <!-- GoHighLevel Form Embed Area -->
-                    <!-- Paste your GoHighLevel form embed code here -->
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Independence Section -->
-    <section class="py-20 bg-vicDark relative overflow-hidden">
-        <!-- Decorative elements -->
-        <div class="absolute top-0 right-0 w-96 h-96 bg-vicGreen/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 w-80 h-80 bg-vicOrange/10 rounded-full blur-3xl"></div>
-
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center">
-                <span class="inline-block bg-vicGreen/20 text-vicGreen px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-6">Our Philosophy</span>
-                <h2 class="font-display text-3xl md:text-5xl font-black text-white leading-tight mb-6">
-                    Independence Is A God-Given Right.<br>
-                    <span class="text-vicOrange">The System is Broken.</span>
-                </h2>
-                <div class="max-w-3xl mx-auto">
-                    <p class="text-lg md:text-xl text-slate-300 leading-relaxed mb-6">
-                        For many young adults, buying a home feels impossible. But it shouldn't be.
-                    </p>
-                    <p class="text-slate-400 leading-relaxed mb-6">
-                        We believe you shouldn't have to sign a 30-year debt sentence just to have a roof over your head. We are offering a genuine alternative to the traditional, broken system. Our builds are efficient, compliant, and cost-effective.
-                    </p>
-                    <p class="text-xl md:text-2xl text-white font-display italic">
-                        "It's not just a granny flat - it's your freedom."
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Choose Your Path -->
-    <section class="py-20 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">What is your goal?</h2>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-
-                <!-- Investor Path -->
-                <div class="group relative bg-white border border-slate-200 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition duration-300 hover:-translate-y-2">
-                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-blue-400 rounded-t-2xl"></div>
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase">For Investors</span>
-                        <i class="fa-solid fa-money-bill-trend-up text-blue-500 text-3xl"></i>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-slate-800 mb-2 leading-tight">Got unused land? It could be paying you <span class="text-blue-600">$400+ a week.</span></h3>
-
-                    <div class="my-6 space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-circle-exclamation text-red-400"></i>
-                            </div>
-                            <p class="text-sm text-slate-600"><strong class="text-slate-800">The Pain:</strong> Rising interest rates, dead money in the backyard, reliance on one income.</p>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-circle-check text-green-500"></i>
-                            </div>
-                            <p class="text-sm text-slate-600"><strong class="text-slate-800">The Solution:</strong> A cash-flow positive asset that pays its own way.</p>
-                        </div>
-                    </div>
-
-                    <button onclick="scrollToForm()" class="w-full py-3 bg-slate-50 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-600 hover:text-white transition">
-                        Get Investment Quote
-                    </button>
-                </div>
-
-                <!-- Family Path -->
-                <div class="group relative bg-white border border-slate-200 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition duration-300 hover:-translate-y-2">
-                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-vicOrange to-yellow-500 rounded-t-2xl"></div>
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase">For Families</span>
-                        <i class="fa-solid fa-heart text-vicOrange text-3xl"></i>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-slate-800 mb-2 leading-tight">Your loved ones can't afford a home - but <span class="text-vicOrange">your backyard is the solution.</span></h3>
-
-                    <div class="my-6 space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-circle-exclamation text-red-400"></i>
-                            </div>
-                            <p class="text-sm text-slate-600"><strong class="text-slate-800">The Pain:</strong> Cost of living crisis, impossible deposits, loved ones stuck renting forever.</p>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                                <i class="fa-solid fa-circle-check text-green-500"></i>
-                            </div>
-                            <p class="text-sm text-slate-600"><strong class="text-slate-800">The Solution:</strong> Give them independence without the debt. A way to move out without moving away.</p>
-                        </div>
-                    </div>
-
-                    <button onclick="scrollToForm()" class="w-full py-3 bg-slate-50 border-2 border-vicOrange text-vicOrange font-bold rounded-lg hover:bg-vicOrange hover:text-white transition">
-                        Get Family Quote
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- The Process - Visual Flow -->
-    <section class="py-20 bg-white" id="process">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <span class="inline-block bg-vicGreen/10 text-vicGreen px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Simple Process</span>
-                <h2 class="font-display text-3xl md:text-5xl font-bold text-vicDark">From "Dead Backyard" to "Done"</h2>
-                <p class="text-slate-600 mt-3 text-lg">Simple. Transparent. Fast.</p>
-            </div>
-
-            <!-- Process Flow -->
-            <div class="relative">
-                <!-- Desktop Flow -->
-                <div class="hidden md:block">
-                    <!-- Connecting Line -->
-                    <div class="absolute top-32 left-[10%] right-[10%] h-1 bg-gradient-to-r from-vicGreen via-vicGreenDark to-vicGreen rounded-full z-0"></div>
-
-                    <div class="grid grid-cols-5 gap-6 relative z-10">
-                        <!-- Step 1 -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-20 h-20 bg-vicGreen text-white rounded-2xl flex items-center justify-center font-bold text-2xl mb-4 shadow-lg transform hover:scale-110 transition cursor-pointer" onclick="scrollToForm()">
-                                <i class="fa-solid fa-comments"></i>
-                            </div>
-                            <div class="w-4 h-4 bg-vicGreen rounded-full mb-4 ring-4 ring-white shadow-md"></div>
-                            <h4 class="font-bold text-vicDark text-lg mb-2">Free Quote</h4>
-                            <p class="text-sm text-slate-500">We check sewers &amp; easements remotely. No site visit needed.</p>
-                        </div>
-
-                        <!-- Step 2 -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-2xl mb-4 shadow-lg transform hover:scale-110 transition">
-                                <i class="fa-solid fa-file-contract"></i>
-                            </div>
-                            <div class="w-4 h-4 bg-vicDark rounded-full mb-4 ring-4 ring-white shadow-md"></div>
-                            <h4 class="font-bold text-vicDark text-lg mb-2">Fixed Price</h4>
-                            <p class="text-sm text-slate-500">No hidden costs or allowances. Price is locked.</p>
-                        </div>
-
-                        <!-- Step 3 -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-2xl mb-4 shadow-lg transform hover:scale-110 transition">
-                                <i class="fa-solid fa-stamp"></i>
-                            </div>
-                            <div class="w-4 h-4 bg-vicDark rounded-full mb-4 ring-4 ring-white shadow-md"></div>
-                            <h4 class="font-bold text-vicDark text-lg mb-2">Permit Express</h4>
-                            <p class="text-sm text-slate-500">We handle the surveyor. No council planning delays.</p>
-                        </div>
-
-                        <!-- Step 4 -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-2xl mb-4 shadow-lg transform hover:scale-110 transition">
-                                <i class="fa-solid fa-hammer"></i>
-                            </div>
-                            <div class="w-4 h-4 bg-vicDark rounded-full mb-4 ring-4 ring-white shadow-md"></div>
-                            <h4 class="font-bold text-vicDark text-lg mb-2">The Build</h4>
-                            <p class="text-sm text-slate-500">Rapid construction schedule managed by Ahmed &amp; team.</p>
-                        </div>
-
-                        <!-- Step 5 -->
-                        <div class="flex flex-col items-center text-center">
-                            <div class="w-20 h-20 bg-gradient-to-br from-vicGreen to-green-500 text-white rounded-2xl flex items-center justify-center font-bold text-2xl mb-4 shadow-lg transform hover:scale-110 transition">
-                                <i class="fa-solid fa-key"></i>
-                            </div>
-                            <div class="w-4 h-4 bg-green-500 rounded-full mb-4 ring-4 ring-white shadow-md"></div>
-                            <h4 class="font-bold text-vicDark text-lg mb-2">Handover</h4>
-                            <p class="text-sm text-slate-500">Here are the keys. Move in or list on RealEstate.com.au.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mobile Flow - Vertical -->
-                <div class="md:hidden relative">
-                    <!-- Vertical Line -->
-                    <div class="absolute top-0 bottom-0 left-10 w-1 bg-gradient-to-b from-vicGreen via-vicDark to-green-500 rounded-full z-0"></div>
-
-                    <div class="space-y-8 relative z-10">
-                        <!-- Step 1 -->
-                        <div class="flex items-start gap-6">
-                            <div class="w-20 h-20 bg-vicGreen text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shrink-0">
-                                <i class="fa-solid fa-comments"></i>
-                            </div>
-                            <div class="pt-2">
-                                <h4 class="font-bold text-vicDark text-lg mb-1">1. Free Quote</h4>
-                                <p class="text-sm text-slate-500">We check sewers &amp; easements remotely.</p>
-                            </div>
-                        </div>
-
-                        <!-- Step 2 -->
-                        <div class="flex items-start gap-6">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shrink-0">
-                                <i class="fa-solid fa-file-contract"></i>
-                            </div>
-                            <div class="pt-2">
-                                <h4 class="font-bold text-vicDark text-lg mb-1">2. Fixed Price</h4>
-                                <p class="text-sm text-slate-500">No hidden costs. Price is locked.</p>
-                            </div>
-                        </div>
-
-                        <!-- Step 3 -->
-                        <div class="flex items-start gap-6">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shrink-0">
-                                <i class="fa-solid fa-stamp"></i>
-                            </div>
-                            <div class="pt-2">
-                                <h4 class="font-bold text-vicDark text-lg mb-1">3. Permit Express</h4>
-                                <p class="text-sm text-slate-500">We handle the surveyor.</p>
-                            </div>
-                        </div>
-
-                        <!-- Step 4 -->
-                        <div class="flex items-start gap-6">
-                            <div class="w-20 h-20 bg-vicDark text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shrink-0">
-                                <i class="fa-solid fa-hammer"></i>
-                            </div>
-                            <div class="pt-2">
-                                <h4 class="font-bold text-vicDark text-lg mb-1">4. The Build</h4>
-                                <p class="text-sm text-slate-500">Rapid construction by Ahmed &amp; team.</p>
-                            </div>
-                        </div>
-
-                        <!-- Step 5 -->
-                        <div class="flex items-start gap-6">
-                            <div class="w-20 h-20 bg-gradient-to-br from-vicGreen to-green-500 text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-lg shrink-0">
-                                <i class="fa-solid fa-key"></i>
-                            </div>
-                            <div class="pt-2">
-                                <h4 class="font-bold text-vicDark text-lg mb-1">5. Handover</h4>
-                                <p class="text-sm text-slate-500">Here are the keys!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Process Images -->
-            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&amp;h=2041" alt="Project Interior" class="w-full h-full object-cover">
-                </div>
-                <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&amp;h=2041" alt="Project Exterior" class="w-full h-full object-cover">
-                </div>
-                <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&amp;h=2041" alt="Kitchen" class="w-full h-full object-cover">
-                </div>
-                <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-48">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&amp;h=2041" alt="Dining" class="w-full h-full object-cover">
-                </div>
-            </div>
-
-            <!-- CTA -->
-            <div class="text-center mt-12">
-                <button onclick="scrollToForm()" class="inline-flex items-center gap-2 bg-vicGreen hover:bg-vicGreenDark text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide transition shadow-lg">
-                    Start Step 1 - Get Your Free Quote <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Blueprints & Granny Flat Images Section -->
-    <section class="py-20 bg-slate-50" id="blueprints-gallery">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <!-- Blueprints -->
-            <div class="mb-16">
-                <div class="text-center mb-10">
-                    <span class="inline-block bg-vicDark/10 text-vicDark px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Floor Plans</span>
-                    <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">Professional Blueprints</h2>
-                    <p class="text-slate-600 mt-3">Detailed architectural plans for our premium granny flats</p>
-                </div>
-
-                <div class="blueprint-grid">
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl bg-white p-4 border border-slate-200">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/0a91b55674903d5cc4355561ccbf3178aca8c95f6021937e9173d42ae32c54d2?w=2245&h=1587" alt="Blueprint 1 - Floor Plan" class="w-full h-auto object-contain rounded-lg">
-                    </div>
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl bg-white p-4 border border-slate-200">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/9423ad0c2382b930f6732bb43857d232a4923a7a7d932c5d627cbd78b5468756?w=2245&h=1587" alt="Blueprint 2 - Elevation Views" class="w-full h-auto object-contain rounded-lg">
-                    </div>
-                </div>
-                <p class="text-center text-slate-500 mt-6 text-sm italic">
-                    <i class="fa-solid fa-file-lines mr-2"></i>And more detailed plans available upon consultation...
-                </p>
-            </div>
-
-            <!-- Granny Flat Images -->
-            <div>
-                <div class="text-center mb-10">
-                    <span class="inline-block bg-vicGreen/10 text-vicGreen px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Visualisations</span>
-                    <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">Granny Flat Designs</h2>
-                    <p class="text-slate-600 mt-3">See what your new dwelling could look like</p>
-                </div>
-
-                <div class="granny-flat-grid">
-                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/45f56595e768be5a8e154660ecb039a389b86cd956b58dbe15b53db8ed75b0ee?w=2560&h=1333" alt="Granny Flat Exterior" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/e6d7b9876c8c3e1b41bf3e72616b6c2b7f945288a289b27e3ab97309e59761e7?w=1920&h=1000" alt="Granny Flat Kitchen" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/140bdc6e749826c9c907f65d6a3058b9bca138e13104e067e6921c94ff58199b?w=1920&h=1000" alt="Granny Flat Bedroom" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-xl overflow-hidden shadow-lg h-56">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/940111be2ef4829546fac94b03ee7d03f667458e53c6db889c1ea62a95a83138?w=1920&h=1000" alt="Granny Flat Living" class="w-full h-full object-cover">
-                    </div>
-                </div>
-                <p class="text-center text-slate-500 mt-6 text-sm italic">
-                    <i class="fa-solid fa-images mr-2"></i>And more design options to explore...
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Project Gallery -->
-    <section class="py-20 bg-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <span class="inline-block bg-vicDark/10 text-vicDark px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">Our Work</span>
-                <h2 class="font-display text-3xl md:text-4xl font-bold text-vicDark">Quality You Can See</h2>
-                <p class="text-slate-600 mt-3">Real projects. Real craftsmanship. Real results.</p>
-            </div>
-
-            <!-- Gallery Grid -->
-            <div class="gallery-grid">
-                <!-- Large Featured Image -->
-                <div class="gallery-item img-zoom rounded-2xl overflow-hidden shadow-xl relative group">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b6b920f8a45b3c5988fb73a574ded0fb09ce15691f3da106c4800a19a86f8a6f?w=3062&amp;h=2041" alt="Featured Project" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                        <div>
-                            <p class="text-white font-bold text-lg">Premium Kitchen &amp; Dining</p>
-                            <p class="text-white/70 text-sm">Modern open-plan living</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Smaller Images -->
-                <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/bce81ea604594ea831796529614777d298f5921ac5b7ec6abc57cca8935c2227?w=3062&amp;h=2041" alt="Dining Room" class="w-full h-full object-cover">
-                </div>
-                <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/4359b6076f7f584d51969eb0724383cd5d451ba47bb3561707167c6624ca59e9?w=3062&amp;h=2041" alt="Kitchen" class="w-full h-full object-cover">
-                </div>
-                <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/7a220d82e3439df35999d50993231e189f546d0e3b5e95c709c329fab0462a92?w=3062&amp;h=2041" alt="Modern Exterior" class="w-full h-full object-cover">
-                </div>
-                <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/76d2bfbb288f6c23a9749a95fee83bc247b7fa61970c20eaa6de081c94f96c0a?w=3062&amp;h=2041" alt="Brick Exterior" class="w-full h-full object-cover">
-                </div>
-                <div class="gallery-item img-zoom rounded-xl overflow-hidden shadow-lg">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/b06468217c0267d7dfb5d08cc21d0928349ba61adf256a9092fca02020b4bb23?w=3062&amp;h=2041" alt="Brick House" class="w-full h-full object-cover">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- We Know What We're Doing Section -->
-    <section class="py-20 bg-white border-t border-slate-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <!-- Text Content -->
-                <div>
-                    <span class="inline-block bg-vicOrange/10 text-vicOrange px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-6">Experience Matters</span>
-                    <h2 class="font-display text-4xl md:text-5xl font-black text-vicDark mb-6 leading-tight">We Know What We're Doing.</h2>
-                    <div class="w-20 h-1.5 bg-vicGreen mb-6"></div>
-                    <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                        Vicbuild isn't just a granny flat builder. We are a registered Domestic &amp; Commercial Builder with over <strong class="text-vicDark">15 years of experience</strong> delivering major projects up to <strong class="text-vicDark">$20 Million</strong>.
-                    </p>
-                    <p class="text-slate-500 mb-8">
-                        From complex commercial fit-outs like the Burwood Brickworks Medical Centre to multi-unit developments in Punt Rd. We bring big-build precision to your backyard project.
-                    </p>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-full flex items-center justify-center">
-                                <i class="fa-solid fa-certificate text-vicGreen text-xl"></i>
-                            </div>
-                            <span class="font-semibold text-slate-700">Registered Builder: CDB-U 53543</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-full flex items-center justify-center">
-                                <i class="fa-solid fa-calendar-check text-vicGreen text-xl"></i>
-                            </div>
-                            <span class="font-semibold text-slate-700">15+ Years Experience</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-full flex items-center justify-center">
-                                <i class="fa-solid fa-award text-vicGreen text-xl"></i>
-                            </div>
-                            <span class="font-semibold text-slate-700">Commercial Grade Quality</span>
-                        </li>
-                    </ul>
-                    <button onclick="scrollToForm()" class="inline-flex items-center text-vicGreen font-bold hover:text-vicGreenDark transition text-lg">
-                        Start your project with experts <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-
-                <!-- Image Collage -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-64">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/37927b38f2396daa62ccd77f8b4ed7aa3ea368699f19e0bb7e98727eea72fa8e?w=3062&amp;h=2041" alt="Vicbuild Sign" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-64 mt-8">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&amp;h=2041" alt="Kitchen Project" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-48 -mt-4">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/16facbbca7aaf411e7518d7a791fa54f92fbe8ae831351c6c6cb70b29f688021?w=3062&amp;h=2041" alt="Living Space" class="w-full h-full object-cover">
-                    </div>
-                    <div class="img-zoom rounded-2xl overflow-hidden shadow-xl h-48 mt-4">
-                        <img src="https://pfst.cf2.poecdn.net/base/image/362c9c840ecb8ac6e7d370d370c06a81cebd69efb6ffd8bad88a1e61b6b1e38d?w=3062&amp;h=2041" alt="Modern Kitchen" class="w-full h-full object-cover">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- The Product / Offer -->
-    <section class="py-20 bg-slate-50" id="offer">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col lg:flex-row">
-                <!-- Visual Side -->
-                <div class="lg:w-1/2 relative min-h-[400px]">
-                    <img src="https://pfst.cf2.poecdn.net/base/image/2acf0d3e46797495663782934a8115c38af208e11fd79958775ea43fde101839?w=3062&amp;h=2041" alt="Interior View" class="absolute inset-0 w-full h-full object-cover">
-                    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8">
-                        <span class="bg-vicGreen text-white px-3 py-1 text-sm font-bold rounded uppercase mb-2 inline-block">Most Popular</span>
-                        <h3 class="text-3xl font-bold text-white">The Vicbuild 60 SSD Executive</h3>
-                        <p class="text-slate-300">Designed for Victoria's Permit-Free Code</p>
-                    </div>
-                </div>
-
-                <!-- Details Side -->
-                <div class="lg:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                    <h4 class="text-2xl font-bold text-vicDark mb-6">Everything You Need. Nothing You Don't.</h4>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-xl flex items-center justify-center text-vicGreen shrink-0">
-                                <i class="fa-solid fa-bed text-xl"></i>
-                            </div>
-                            <div>
-                                <strong class="block text-slate-800">1-2 Generous Bedrooms</strong>
-                                <span class="text-sm text-slate-500">Fits Queen beds, not bunks.</span>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-xl flex items-center justify-center text-vicGreen shrink-0">
-                                <i class="fa-solid fa-bath text-xl"></i>
-                            </div>
-                            <div>
-                                <strong class="block text-slate-800">Luxury Bath/Laundry</strong>
-                                <span class="text-sm text-slate-500">Space saving modern design.</span>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-xl flex items-center justify-center text-vicGreen shrink-0">
-                                <i class="fa-solid fa-leaf text-xl"></i>
-                            </div>
-                            <div>
-                                <strong class="block text-slate-800">6-Star Energy Rating</strong>
-                                <span class="text-sm text-slate-500">Keeps tenants warm &amp; bills low.</span>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="w-12 h-12 bg-vicGreen/10 rounded-xl flex items-center justify-center text-vicGreen shrink-0">
-                                <i class="fa-solid fa-key text-xl"></i>
-                            </div>
-                            <div>
-                                <strong class="block text-slate-800">Full Turnkey Finish</strong>
-                                <span class="text-sm text-slate-500">Flooring, painting &amp; lights included.</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onclick="scrollToForm()" class="bg-vicDark text-white w-full py-4 rounded-lg font-bold uppercase tracking-wider hover:bg-slate-800 transition">
-                        Get My Free Quote
-                    </button>
-                    <p class="text-center text-xs text-slate-400 mt-4">
-                        <i class="fa-solid fa-lock mr-1"></i> SSD Compliant Design (No Council Permit Needed)
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why 90% Fail - Visual Comparison -->
-    <section class="py-20 bg-white" id="comparison">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <span class="inline-block bg-red-100 text-red-600 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider mb-4">The Truth</span>
-                <h2 class="font-display text-3xl md:text-5xl font-bold text-vicDark mb-4">Why 90% of Granny Flat Builds<br class="hidden md:block"> Are a <span class="text-red-500">Nightmare</span></h2>
-                <p class="text-lg text-slate-600 max-w-3xl mx-auto">Most builders are stuck in the past. They drag you through 12 months of Council Planning hell and hit you with "variations."</p>
-            </div>
-
-            <!-- Visual Comparison -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- The Old Way -->
-                <div class="comparison-bad rounded-3xl p-8 md:p-10 border-2 border-red-200 relative overflow-hidden">
-                    <!-- Decorative X -->
-                    <div class="absolute -top-10 -right-10 text-red-200 text-[200px] font-black opacity-20 leading-none">✕</div>
-
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-14 h-14 bg-red-500 rounded-2xl flex items-center justify-center">
-                                <i class="fa-solid fa-thumbs-down text-white text-2xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-red-700">Traditional Builders</h3>
-                        </div>
-
-                        <ul class="space-y-5">
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-xmark text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">12+ Month Council Delays</span>
-                                    <span class="text-sm text-slate-600">Endless waiting and bureaucracy</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-xmark text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Hidden "Site Costs" &amp; Variations</span>
-                                    <span class="text-sm text-slate-600">Price keeps going up</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-xmark text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Complex Planning Permits Required</span>
-                                    <span class="text-sm text-slate-600">Mountains of paperwork</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-xmark text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Stressful &amp; Unpredictable</span>
-                                    <span class="text-sm text-slate-600">You never know what's next</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- The Vicbuild Way -->
-                <div class="comparison-good rounded-3xl p-8 md:p-10 border-2 border-green-300 relative overflow-hidden shadow-xl">
-                    <!-- Recommended Badge -->
-                    <div class="absolute top-0 right-0 bg-vicGreen text-white text-xs font-bold px-4 py-2 rounded-bl-2xl uppercase tracking-wide">
-                        <i class="fa-solid fa-crown mr-1"></i> Recommended
-                    </div>
-
-                    <!-- Decorative Check -->
-                    <div class="absolute -top-10 -right-10 text-green-200 text-[200px] font-black opacity-20 leading-none">✓</div>
-
-                    <div class="relative z-10">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-14 h-14 bg-vicGreen rounded-2xl flex items-center justify-center">
-                                <i class="fa-solid fa-trophy text-white text-2xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-vicGreenDark">The Vicbuild SSD Method</h3>
-                        </div>
-
-                        <ul class="space-y-5">
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-vicGreen rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-check text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Fast Track (No Council Planning)</span>
-                                    <span class="text-sm text-slate-600">Skip the 12-month wait</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-vicGreen rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-check text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">100% Fixed Price Contracts</span>
-                                    <span class="text-sm text-slate-600">What you see is what you pay</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-vicGreen rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-check text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Premium Quality at a Fair Price</span>
-                                    <span class="text-sm text-slate-600">Commercial grade craftsmanship</span>
-                                </div>
-                            </li>
-                            <li class="flex items-start gap-4">
-                                <div class="w-10 h-10 bg-vicGreen rounded-full flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-check text-white text-lg"></i>
-                                </div>
-                                <div>
-                                    <span class="font-bold text-slate-800 block">Permit-Free &lt;60sqm Builds</span>
-                                    <span class="text-sm text-slate-600">Built under Victoria's SSD code</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CTA -->
-            <div class="text-center mt-12">
-                <button onclick="scrollToForm()" class="inline-flex items-center gap-2 bg-vicGreen hover:bg-vicGreenDark text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide transition shadow-lg text-lg">
-                    Choose The Better Way <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Social Proof Slider -->
-    <section class="py-16 bg-vicDark overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 mb-10 text-center">
-            <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-3">"A Unicorn of a Builder"</h2>
-            <div class="flex justify-center gap-1 text-yellow-400 text-2xl">
-                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-            </div>
         </div>
 
-        <!-- Slider Container -->
-        <div class="relative w-full">
-            <div class="scrolling-wrapper flex gap-6 px-4 md:px-20 overflow-x-auto pb-8 snap-x">
-
-                <!-- Review 1 -->
-                <div class="snap-center shrink-0 w-80 md:w-96 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="flex text-yellow-400 mb-3 text-sm gap-0.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-white text-sm mb-4 leading-relaxed">"Vicbuild is a true unicorn of a builder. The entire project ran precisely to schedule over 7 months with <strong class="text-vicGreen">no contract variations or hidden fees</strong>. Ahmed was always available... truly made the entire process simple."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-vicOrange rounded-full flex items-center justify-center text-white font-bold text-lg">M</div>
-                        <div>
-                            <p class="text-white font-bold">Marcus Italia</p>
-                            <p class="text-slate-400 text-xs">Moonee Ponds Renovation</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Review 2 -->
-                <div class="snap-center shrink-0 w-80 md:w-96 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="flex text-yellow-400 mb-3 text-sm gap-0.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-white text-sm mb-4 leading-relaxed">"Couldn't be happier with their attention to detail, quality, transparency and communication. We will definitely engage VICbuild on our next project."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">W</div>
-                        <div>
-                            <p class="text-white font-bold">Wafa Kassab</p>
-                            <p class="text-slate-400 text-xs">Verified Client</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Review 3 -->
-                <div class="snap-center shrink-0 w-80 md:w-96 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="flex text-yellow-400 mb-3 text-sm gap-0.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-white text-sm mb-4 leading-relaxed">"Great Service and the quality of the build was second to none and are very reasonably priced. Very happy with the builders at Vicbuild."</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg">Y</div>
-                        <div>
-                            <p class="text-white font-bold">Yahya Said</p>
-                            <p class="text-slate-400 text-xs">Verified Client</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Review 4 -->
-                <div class="snap-center shrink-0 w-80 md:w-96 bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="flex text-yellow-400 mb-3 text-sm gap-0.5">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="text-white text-sm mb-4 leading-relaxed">"Finding a trustworthy builder in the industry can be difficult! Ahmed is always great to deal with, very efficient, quick responses and professional! Highly recommended!"</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">A</div>
-                        <div>
-                            <p class="text-white font-bold">Additional Housing Solutions</p>
-                            <p class="text-slate-400 text-xs">Professional Partner</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Final CTA -->
-    <section class="py-24 bg-gradient-to-br from-vicGreen to-vicGreenDark relative overflow-hidden">
-        <!-- Decoration -->
-        <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-black opacity-10 rounded-full blur-3xl"></div>
-
-        <div class="max-w-4xl mx-auto text-center px-4 relative z-10">
-            <h2 class="font-display text-4xl md:text-5xl font-black text-white mb-6">Don't Let Your Backyard Go To Waste.</h2>
-            <p class="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                Every week you wait is another week of lost rental income. Construction slots for Q3 are filling up fast.
-            </p>
-            <button onclick="scrollToForm()" class="bg-white text-vicGreen text-xl px-10 py-5 rounded-xl font-bold uppercase tracking-wide transition shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:bg-slate-100">
-                Get My Free Quote
-            </button>
-            <p class="mt-4 text-white/70 text-sm font-medium">Speak directly to a builder, not a salesperson.</p>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-vicDark text-slate-400 py-12 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left">
-                <img src="https://pfst.cf2.poecdn.net/base/image/889163854693489bcbc142ec2caee7378352627c4eb911c9aadf09a695c4a228?w=890&amp;h=280" alt="Vicbuild Logo" class="h-10 w-auto mb-3 mx-auto md:mx-0 brightness-0 invert">
-                <p class="text-sm">Vicbuild Developments Pty Ltd.<br>Registered Building Practitioner: CDB-U 53543</p>
-            </div>
-
-            <div class="text-sm text-center md:text-right">
-                <p>© 2024 Vicbuild. All rights reserved.</p>
-                <div class="flex gap-4 justify-center md:justify-end mt-2">
-                    <a href="#" class="hover:text-white transition">Privacy Policy</a>
-                    <a href="#" class="hover:text-white transition">Terms of Service</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Custom Modal -->
-    <div id="successModal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
-            <div class="bg-vicGreen p-6 text-center">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-check text-vicGreen text-3xl"></i>
-                </div>
-                <h3 class="text-white font-bold text-xl">Thank You!</h3>
-            </div>
-            <div class="p-8 text-center">
-                <p class="text-slate-600 mb-6">A Vicbuild specialist will contact you within 1 hour during working hours.</p>
-                <button onclick="closeModal()" class="w-full bg-vicGreen hover:bg-vicGreenDark text-white font-bold py-3 rounded-lg transition">
-                    Got It
-                </button>
-            </div>
+        <div class="legend">
+            <div class="legend-item"><div class="dot" style="background:var(--s-color)"></div>s-orbital (Sphere)</div>
+            <div class="legend-item"><div class="dot" style="background:var(--p-color)"></div>p-orbital (Dumbbell)</div>
+            <div class="legend-item"><div class="dot" style="background:var(--d-color)"></div>d-orbital (Clover)</div>
         </div>
     </div>
+    
+    <div id="canvas-container"></div>
+</div>
 
-    <!-- JavaScript -->
-    <script>
-        function scrollToForm() {
-            const form = document.getElementById('hero-form');
-            if (form) {
-                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- Data: Electron Configurations for Elements 1-20 ---
+    const elements = [
+        { n: 1, sym: "H", name: "Hydrogen", conf: ["1s1"] },
+        { n: 2, sym: "He", name: "Helium", conf: ["1s2"] },
+        { n: 3, sym: "Li", name: "Lithium", conf: ["1s2", "2s1"] },
+        { n: 4, sym: "Be", name: "Beryllium", conf: ["1s2", "2s2"] },
+        { n: 5, sym: "B", name: "Boron", conf: ["1s2", "2s2", "2p1"] },
+        { n: 6, sym: "C", name: "Carbon", conf: ["1s2", "2s2", "2p2"] },
+        { n: 7, sym: "N", name: "Nitrogen", conf: ["1s2", "2s2", "2p3"] },
+        { n: 8, sym: "O", name: "Oxygen", conf: ["1s2", "2s2", "2p4"] },
+        { n: 9, sym: "F", name: "Fluorine", conf: ["1s2", "2s2", "2p5"] },
+        { n: 10, sym: "Ne", name: "Neon", conf: ["1s2", "2s2", "2p6"] },
+        { n: 11, sym: "Na", name: "Sodium", conf: ["1s2", "2s2", "2p6", "3s1"] },
+        { n: 12, sym: "Mg", name: "Magnesium", conf: ["1s2", "2s2", "2p6", "3s2"] },
+        { n: 13, sym: "Al", name: "Aluminium", conf: ["1s2", "2s2", "2p6", "3s2", "3p1"] },
+        { n: 14, sym: "Si", name: "Silicon", conf: ["1s2", "2s2", "2p6", "3s2", "3p2"] },
+        { n: 15, sym: "P", name: "Phosphorus", conf: ["1s2", "2s2", "2p6", "3s2", "3p3"] },
+        { n: 16, sym: "S", name: "Sulfur", conf: ["1s2", "2s2", "2p6", "3s2", "3p4"] },
+        { n: 17, sym: "Cl", name: "Chlorine", conf: ["1s2", "2s2", "2p6", "3s2", "3p5"] },
+        { n: 18, sym: "Ar", name: "Argon", conf: ["1s2", "2s2", "2p6", "3s2", "3p6"] },
+        { n: 19, sym: "K", name: "Potassium", conf: ["1s2", "2s2", "2p6", "3s2", "3p6", "4s1"] },
+        { n: 20, sym: "Ca", name: "Calcium", conf: ["1s2", "2s2", "2p6", "3s2", "3p6", "4s2"] }
+    ];
+
+    // Map shells to their specific axis components
+    const subshellMap = {
+        's': [''],
+        'p': ['x', 'y', 'z'],
+        'd': ['xy', 'yz', 'xz', 'x2-y2', 'z2']
+    };
+
+    // State
+    const activeOrbitals = new Set(); // Stores strings like "2px", "3dxy"
+
+    // --- 3D Scene Setup ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    // Use a slight fog for depth
+    scene.fog = new THREE.FogExp2(0x0f172a, 0.02);
+
+    const camera = new THREE.PerspectiveCamera(50, container.offsetWidth / container.offsetHeight, 0.1, 100);
+    camera.position.set(10, 8, 10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 3);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(0, 0, 0); // Inner glow
+    scene.add(pointLight);
+
+    // Helpers
+    const gridHelper = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
+    scene.add(gridHelper);
+    
+    const axesHelper = new THREE.AxesHelper(2);
+    scene.add(axesHelper);
+
+    // Nucleus
+    const nucleusGeo = new THREE.SphereGeometry(0.2, 16, 16);
+    const nucleusMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
+    const nucleus = new THREE.Mesh(nucleusGeo, nucleusMat);
+    scene.add(nucleus);
+
+    // --- Orbital Geometry Factories ---
+    // Materials
+    const matS = new THREE.MeshPhysicalMaterial({ color: 0xef4444, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
+    const matP = new THREE.MeshPhysicalMaterial({ color: 0xeab308, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
+    const matD = new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
+
+    // Orbital Group Store
+    const orbitalMeshes = {}; // Key: "1s", "2px" etc., Value: THREE.Mesh/Group
+
+    function createOrbital(n, l, type, axis) {
+        const group = new THREE.Group();
+        const scale = n * 1.2; // Relative sizing based on principal quantum number
+
+        if (type === 's') {
+            const geo = new THREE.SphereGeometry(scale * 0.5, 32, 32);
+            const mesh = new THREE.Mesh(geo, matS);
+            group.add(mesh);
+        } 
+        else if (type === 'p') {
+            // P orbital: two lobes (dumbbells)
+            const lobeGeo = new THREE.SphereGeometry(scale * 0.4, 32, 32);
+            lobeGeo.scale(0.7, 1, 0.7); // Elongate slightly
+            
+            const top = new THREE.Mesh(lobeGeo, matP);
+            top.position.y = scale * 0.5;
+            
+            const bottom = new THREE.Mesh(lobeGeo, matP);
+            bottom.position.y = -scale * 0.5;
+            
+            group.add(top, bottom);
+
+            // Rotate based on axis
+            if (axis === 'x') group.rotation.z = Math.PI / 2;
+            if (axis === 'z') group.rotation.x = Math.PI / 2;
+            // y is default
+        } 
+        else if (type === 'd') {
+            // D orbital: clover leaf (4 lobes) or donut (dz2)
+            const lobeSize = scale * 0.35;
+            const lobeGeo = new THREE.SphereGeometry(lobeSize, 32, 32);
+            lobeGeo.scale(0.6, 1.2, 0.6);
+
+            if (axis === 'z2') {
+                // Donut shape
+                const top = new THREE.Mesh(lobeGeo, matD);
+                top.position.y = scale * 0.5;
+                const bottom = new THREE.Mesh(lobeGeo, matD);
+                bottom.position.y = -scale * 0.5;
+                
+                const torusGeo = new THREE.TorusGeometry(lobeSize * 1.2, lobeSize * 0.4, 16, 32);
+                const ring = new THREE.Mesh(torusGeo, matD);
+                ring.rotation.x = Math.PI / 2;
+
+                group.add(top, bottom, ring);
+            } else {
+                // Clover shapes (4 lobes)
+                const lobes = [];
+                for(let i=0; i<4; i++) {
+                    const mesh = new THREE.Mesh(lobeGeo, matD);
+                    lobes.push(mesh);
+                    group.add(mesh);
+                }
+
+                // Position lobes in a generic X shape on XY plane first
+                const dist = scale * 0.5;
+                lobes[0].position.set(dist, dist, 0); lobes[0].rotation.z = -Math.PI/4;
+                lobes[1].position.set(-dist, dist, 0); lobes[1].rotation.z = Math.PI/4;
+                lobes[2].position.set(-dist, -dist, 0); lobes[2].rotation.z = -Math.PI/4;
+                lobes[3].position.set(dist, -dist, 0); lobes[3].rotation.z = Math.PI/4;
+
+                // Rotate group to match specific d-orbital orientation
+                if (axis === 'xz') group.rotation.x = Math.PI / 2;
+                if (axis === 'yz') group.rotation.y = Math.PI / 2;
+                if (axis === 'x2-y2') { /* Default orientation corresponds to xy actually, but x2-y2 is aligned with axes */
+                    group.rotation.z = 0; 
+                    // Adjust positions for on-axis alignment
+                    lobes[0].position.set(dist*1.2, 0, 0); lobes[0].rotation.z = Math.PI/2;
+                    lobes[1].position.set(-dist*1.2, 0, 0); lobes[1].rotation.z = Math.PI/2;
+                    lobes[2].position.set(0, dist*1.2, 0); lobes[2].rotation.z = 0;
+                    lobes[3].position.set(0, -dist*1.2, 0); lobes[3].rotation.z = 0;
+                }
             }
         }
+        
+        return group;
+    }
 
-        function showSuccessModal() {
-            document.getElementById('successModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
+    function updateScene() {
+        // Clear old orbitals
+        Object.values(orbitalMeshes).forEach(m => scene.remove(m));
+        
+        // Add active ones
+        activeOrbitals.forEach(id => {
+            if (!orbitalMeshes[id]) {
+                // Parse ID: e.g., "2px", "3dxy", "1s"
+                const n = parseInt(id[0]);
+                const type = id[1];
+                const axis = id.substring(2); // can be empty, x, y, z, xy, etc.
+                orbitalMeshes[id] = createOrbital(n, null, type, axis);
+            }
+            scene.add(orbitalMeshes[id]);
+        });
+    }
 
-        function closeModal() {
-            document.getElementById('successModal').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
+    // --- UI Logic ---
+    
+    // 1. Fill Element Selector
+    const select = document.getElementById('element-select');
+    elements.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.n;
+        opt.textContent = `${e.n}. ${e.sym} - ${e.name}`;
+        select.appendChild(opt);
+    });
 
-        // Close modal on click outside
-        document.getElementById('successModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
+    // 2. Build Aufbau Grid
+    // We need rows for shells 1, 2, 3, 4
+    const configLayout = [
+        { n: 4, sub: ['s'] }, // Simplified for first 20 elements (Ca ends at 4s)
+        { n: 3, sub: ['d', 'p', 's'] }, // 3d technically exists but empty for Z<=20
+        { n: 2, sub: ['p', 's'] },
+        { n: 1, sub: ['s'] }
+    ];
+    
+    const grid = document.getElementById('aufbau-grid');
+
+    configLayout.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'shell-row';
+        
+        const label = document.createElement('div');
+        label.className = 'shell-label';
+        label.textContent = row.n;
+        rowDiv.appendChild(label);
+
+        // Reverse subshells to render s on left visually if desired, 
+        // but Aufbau usually shows energies. 
+        // Let's stick to reading left-to-right s, p, d.
+        const sortedSub = ['s', 'p', 'd'].filter(x => row.sub.includes(x));
+
+        sortedSub.forEach(type => {
+            // Don't render 3d for this specific <20 element visualizer to keep UI clean,
+            // but prompt asked for 3d config map capability.
+            // Let's include 3d just for interactivity demo even if not filled by Ca.
+            
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'subshell-group';
+            
+            // Create Main Button (e.g., "2p")
+            const btn = document.createElement('button');
+            btn.className = `orbital-btn btn-${type}`;
+            btn.textContent = `${row.n}${type}`;
+            btn.dataset.id = `${row.n}${type}`; // Broad ID
+            
+            // Sub-selector (tooltip)
+            const subMenu = document.createElement('div');
+            subMenu.className = 'sub-selector';
+            
+            const axes = subshellMap[type];
+            axes.forEach(axis => {
+                const checkRow = document.createElement('label');
+                checkRow.className = 'axis-check';
+                
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.dataset.fullId = `${row.n}${type}${axis}`; // e.g., 2px
+                
+                // Clicking checkbox toggles specific orbital
+                cb.addEventListener('change', (e) => {
+                    if (e.target.checked) activeOrbitals.add(e.target.dataset.fullId);
+                    else activeOrbitals.delete(e.target.dataset.fullId);
+                    
+                    updateBtnState(btn, subMenu);
+                    updateScene();
+                });
+
+                checkRow.appendChild(cb);
+                checkRow.appendChild(document.createTextNode(axis || 'Total'));
+                subMenu.appendChild(checkRow);
+            });
+
+            btn.appendChild(subMenu);
+            
+            // Interaction Logic
+            btn.addEventListener('click', (e) => {
+                // If clicking the button (not the checkbox inside), toggle all sub-orbitals
+                if (e.target !== btn) return; 
+
+                // Check if all are currently active
+                const allIds = axes.map(a => `${row.n}${type}${a}`);
+                const allActive = allIds.every(id => activeOrbitals.has(id));
+
+                if (allActive) {
+                    // Turn all off
+                    allIds.forEach(id => activeOrbitals.delete(id));
+                } else {
+                    // Turn all on
+                    allIds.forEach(id => activeOrbitals.add(id));
+                }
+                
+                // Sync checkboxes
+                updateBtnState(btn, subMenu);
+                updateScene();
+            });
+
+            // Hover to show sub-selector
+            btn.addEventListener('mouseenter', () => subMenu.classList.add('show'));
+            btn.addEventListener('mouseleave', () => subMenu.classList.remove('show'));
+
+            btnGroup.appendChild(btn);
+            rowDiv.appendChild(btnGroup);
+        });
+
+        grid.appendChild(rowDiv);
+    });
+
+    function updateBtnState(btn, subMenu) {
+        const checkboxes = subMenu.querySelectorAll('input');
+        let checkedCount = 0;
+        checkboxes.forEach(cb => {
+            if (activeOrbitals.has(cb.dataset.fullId)) {
+                cb.checked = true;
+                checkedCount++;
+            } else {
+                cb.checked = false;
             }
         });
 
-        // Close on Escape key
-        document.onkeydown = function(evt) {
-            evt = evt || window.event;
-            if (evt.keyCode === 27) {
-                closeModal();
+        if (checkedCount > 0) btn.classList.add('active');
+        else btn.classList.remove('active');
+    }
+
+    // --- Element Selection Logic ---
+    select.addEventListener('change', (e) => {
+        const z = parseInt(e.target.value);
+        if (!z) return;
+
+        // Clear current
+        activeOrbitals.clear();
+
+        // Determine orbitals based on simple config rules for Z 1-20
+        // Config: 1s, 2s, 2p, 3s, 3p, 4s
+        const limits = { '1s': 2, '2s': 2, '2p': 6, '3s': 2, '3p': 6, '4s': 2 };
+        let electrons = z;
+        
+        const subshellsOrder = ['1s', '2s', '2p', '3s', '3p', '4s'];
+        
+        subshellsOrder.forEach(ss => {
+            if (electrons <= 0) return;
+            
+            const n = ss[0];
+            const type = ss[1];
+            const capacity = limits[ss];
+            const fill = Math.min(electrons, capacity);
+            
+            // Logic to distribute electrons into orbitals (Hund's rule simplified)
+            // We just activate the orbital geometry if there is an electron in that axis
+            const axes = subshellMap[type];
+            
+            // For s, it's just one
+            if (type === 's') {
+                activeOrbitals.add(`${n}s`);
+            } else {
+                // For p, fill x, then y, then z
+                for (let i = 0; i < Math.ceil(fill/2); i++) {
+                     // /2 because each orbital holds 2 e-, but geometry exists if at least 1 e-
+                     if (i < axes.length) activeOrbitals.add(`${n}${type}${axes[i]}`);
+                }
             }
-        };
-    </script>
+            
+            electrons -= fill;
+        });
+
+        // Update UI
+        document.querySelectorAll('.orbital-btn').forEach(btn => {
+            const subMenu = btn.querySelector('.sub-selector');
+            updateBtnState(btn, subMenu);
+        });
+        
+        updateScene();
+    });
 
 
+    // --- Animation Loop ---
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
 
-</body></html>
+    // Handle Resize
+    window.addEventListener('resize', () => {
+        camera.aspect = document.getElementById('canvas-container').offsetWidth / document.getElementById('canvas-container').offsetHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(document.getElementById('canvas-container').offsetWidth, document.getElementById('canvas-container').offsetHeight);
+    });
+
+    animate();
+
+</script>
+</body>
+</html>
