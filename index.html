@@ -5,6 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Interactive Electron Orbital Visualizer</title>
     <style>
+        #welcome-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000; /* Stays on top of everything */
+}
+.welcome-card {
+    background: var(--panel-bg);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--accent-color);
+    text-align: center;
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+    width: 300px;
+}
+#user-name {
+    width: 100%;
+    padding: 12px;
+    margin: 20px 0;
+    box-sizing: border-box;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: white;
+    border-radius: 6px;
+}
+#start-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 6px;
+    color: #0f172a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+#start-btn:active { transform: scale(0.98); }
         :root {
             --bg-color: #0f172a;
             --panel-bg: rgba(30, 41, 59, 0.95);
@@ -131,6 +169,7 @@
     </style>
     
     <script type="importmap">
+        
         {
             "imports": {
                 "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
@@ -140,7 +179,14 @@
     </script>
 </head>
 <body>
-
+<div id="welcome-overlay">
+    <div class="welcome-card">
+        <h1>Orbital Visualizer</h1>
+        <p>Enter your name to begin the simulation</p>
+        <input type="text" id="user-name" placeholder="Scientist Name..." autocomplete="off" />
+        <button id="start-btn">Start Visualizing</button>
+    </div>
+</div>
 <div id="container">
     <div id="sidebar">
         <h1>Orbital Visualizer</h1>
@@ -170,6 +216,45 @@
 </div>
 
 <script type="module">
+    // --- Start Screen Logic ---
+const startBtn = document.getElementById('start-btn');
+const overlay = document.getElementById('welcome-overlay');
+const userNameInput = document.getElementById('user-name');
+
+startBtn.addEventListener('click', async () => {
+    const name = userNameInput.value.trim();
+    
+    if (name) {
+        // Show a "loading" state on the button
+        startBtn.textContent = "Connecting...";
+        startBtn.style.opacity = "0.7";
+
+        try {
+            // This calls your /api/save-user.js file on Vercel
+            const response = await fetch('/api/save-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: name,
+                    timestamp: new Date().toISOString() 
+                })
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            console.log("Backend response:", data.message);
+        } catch (error) {
+            // We log the error but still let the user in so the app isn't broken
+            console.error("Backend error:", error);
+        }
+
+        // Hide the overlay to show the visualizer
+        overlay.style.display = 'none';
+    } else {
+        alert("Please enter a name to continue.");
+    }
+});
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
