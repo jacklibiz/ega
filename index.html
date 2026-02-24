@@ -3,637 +3,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Interactive Electron Orbital Visualizer</title>
+    <title>MYCO-MORPH Deployment Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        #welcome-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000; /* Stays on top of everything */
-}
-.welcome-card {
-    background: var(--panel-bg);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid var(--accent-color);
-    text-align: center;
-    box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
-    width: 300px;
-}
-#user-name {
-    width: 100%;
-    padding: 12px;
-    margin: 20px 0;
-    box-sizing: border-box;
-    background: #0f172a;
-    border: 1px solid #475569;
-    color: white;
-    border-radius: 6px;
-}
-#start-btn {
-    width: 100%;
-    padding: 12px;
-    background: var(--accent-color);
-    border: none;
-    border-radius: 6px;
-    color: #0f172a;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.1s;
-}
-#start-btn:active { transform: scale(0.98); }
-        :root {
-            --bg-color: #0f172a;
-            --panel-bg: rgba(30, 41, 59, 0.95);
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --s-color: #ef4444; /* Red for s */
-            --p-color: #eab308; /* Yellow for p */
-            --d-color: #3b82f6; /* Blue for d */
+        body { background-color: #020617; color: #f1f5f9; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; }
+        @keyframes dash {
+            to { stroke-dashoffset: -15; }
         }
-
-        body { margin: 0; overflow: hidden; background-color: var(--bg-color); font-family: 'Segoe UI', sans-serif; color: var(--text-color); }
-        
-        /* Layout */
-        #container { display: flex; height: 100vh; width: 100vw; }
-        
-        /* Sidebar */
-        #sidebar {
-            width: 320px;
-            background: var(--panel-bg);
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 10;
+        .animate-dash {
+            animation: dash 1s linear infinite;
         }
-
-        h1 { font-size: 1.2rem; margin: 0 0 10px 0; color: var(--accent-color); }
-        h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; border-bottom: 1px solid #334155; padding-bottom: 5px; }
-
-        /* Controls */
-        select {
-            width: 100%;
-            padding: 10px;
-            background: #0f172a;
-            color: white;
-            border: 1px solid #475569;
-            border-radius: 6px;
-            cursor: pointer;
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-
-        /* Aufbau Diagram Layout */
-        .aufbau-container {
-            display: flex;
-            flex-direction: column-reverse; /* Bottom up */
-            gap: 10px;
-            padding: 10px 0;
+        .animate-pulse-slow {
+            animation: pulse-slow 3s ease-in-out infinite;
         }
-
-        .shell-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .shell-label { font-weight: bold; width: 20px; font-size: 0.8rem; color: #64748b; }
-
-        .subshell-group { display: flex; gap: 4px; }
-
-        /* Orbital Buttons */
-        .orbital-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 4px;
-            background: #334155;
-            color: #94a3b8;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .orbital-btn:hover { background: #475569; }
-        
-        .orbital-btn.active {
-            box-shadow: 0 0 8px currentColor;
-            color: white;
-            font-weight: bold;
-        }
-
-        /* Specific Colors for Active State */
-        .btn-s.active { background-color: var(--s-color); }
-        .btn-p.active { background-color: var(--p-color); }
-        .btn-d.active { background-color: var(--d-color); }
-
-        /* Tooltip for granular selection */
-        .sub-selector {
-            display: none;
-            position: absolute;
-            top: 0; left: 40px;
-            background: #1e293b;
-            border: 1px solid #475569;
-            padding: 5px;
-            border-radius: 4px;
-            z-index: 20;
-            width: 120px;
-        }
-
-        .sub-selector.show { display: block; }
-        
-        .axis-check {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.75rem;
-            margin: 2px 0;
-            cursor: pointer;
-        }
-
-        /* Legend */
-        .legend { font-size: 0.8rem; color: #94a3b8; margin-top: auto; }
-        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-
-        /* 3D Area */
-        #canvas-container { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); }
-        #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-
+        .tooltip-box { display: none; }
+        .callout-group:hover .tooltip-box { display: block; }
     </style>
-    
-    <script type="importmap">
-        
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
 </head>
-<body>
-<div id="welcome-overlay">
-    <div class="welcome-card">
-        <h1>Orbital Visualizer</h1>
-        <p>Enter your name to begin the simulation</p>
-        <input type="text" id="user-name" placeholder="Scientist Name..." autocomplete="off" />
-        <button id="start-btn">Start Visualizing</button>
-    </div>
-</div>
-<div id="container">
-    <div id="sidebar">
-        <h1>Orbital Visualizer</h1>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <!-- Header Section -->
+    <div class="max-w-5xl w-full mb-6 flex flex-col md:flex-row justify-between md:items-end border-b border-slate-800 pb-4 gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight mb-2">
+                Project <span class="text-blue-500">MYCO-MORPH</span>
+            </h1>
+            <p class="text-slate-400 font-mono text-sm uppercase tracking-widest flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                Physically Accurate 2-Part Architecture
+            </p>
+        </div>
         
-        <div>
-            <h2>Atom Selector</h2>
-            <select id="element-select">
-                <option value="0">Select an Element (1-20)...</option>
-                </select>
-        </div>
-
-        <div>
-            <h2>Configuration Map (Aufbau)</h2>
-            <p style="font-size: 0.75rem; color:#64748b; margin-top:-5px;">Click to toggle. Hover for details.</p>
-            <div class="aufbau-container" id="aufbau-grid">
-                </div>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item"><div class="dot" style="background:var(--s-color)"></div>s-orbital (Sphere)</div>
-            <div class="legend-item"><div class="dot" style="background:var(--p-color)"></div>p-orbital (Dumbbell)</div>
-            <div class="legend-item"><div class="dot" style="background:var(--d-color)"></div>d-orbital (Clover)</div>
+        <!-- Scale Indicator -->
+        <div class="bg-slate-900 border border-slate-700 p-2 rounded flex items-center gap-3">
+            <div class="text-right">
+                <p class="text-[10px] text-slate-400 uppercase">Scale</p>
+            </div>
+            <div class="w-px h-6 bg-slate-700"></div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span class="text-xs font-mono text-slate-300">= 1.8m</span>
+            <div class="w-px h-6 bg-slate-700 mx-1"></div>
+            <div class="h-10 w-2 bg-blue-500 rounded-sm"></div>
+            <span class="text-xs font-mono text-slate-300">= 20m</span>
         </div>
     </div>
-    
-    <div id="canvas-container"></div>
-</div>
 
-<script type="module">
-    // --- Start Screen Logic ---
-const startBtn = document.getElementById('start-btn');
-const overlay = document.getElementById('welcome-overlay');
-const userNameInput = document.getElementById('user-name');
-
-startBtn.addEventListener('click', async () => {
-    const name = userNameInput.value.trim();
-    
-    if (name) {
-        // Show a "loading" state on the button
-        startBtn.textContent = "Connecting...";
-        startBtn.style.opacity = "0.7";
-
-        try {
-            // This calls your /api/save-user.js file on Vercel
-            const response = await fetch('/api/save-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    username: name,
-                    timestamp: new Date().toISOString() 
-                })
-            });
-
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const data = await response.json();
-            console.log("Backend response:", data.message);
-        } catch (error) {
-            // We log the error but still let the user in so the app isn't broken
-            console.error("Backend error:", error);
-        }
-
-        // Hide the overlay to show the visualizer
-        overlay.style.display = 'none';
-    } else {
-        alert("Please enter a name to continue.");
-    }
-});
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-    // --- Data: Electron Configurations for Elements 1-20 ---
-    const elements = [
-        { n: 1, sym: "H", name: "Hydrogen", conf: ["1s1"] },
-        { n: 2, sym: "He", name: "Helium", conf: ["1s2"] },
-        { n: 3, sym: "Li", name: "Lithium", conf: ["1s2", "2s1"] },
-        { n: 4, sym: "Be", name: "Beryllium", conf: ["1s2", "2s2"] },
-        { n: 5, sym: "B", name: "Boron", conf: ["1s2", "2s2", "2p1"] },
-        { n: 6, sym: "C", name: "Carbon", conf: ["1s2", "2s2", "2p2"] },
-        { n: 7, sym: "N", name: "Nitrogen", conf: ["1s2", "2s2", "2p3"] },
-        { n: 8, sym: "O", name: "Oxygen", conf: ["1s2", "2s2", "2p4"] },
-        { n: 9, sym: "F", name: "Fluorine", conf: ["1s2", "2s2", "2p5"] },
-        { n: 10, sym: "Ne", name: "Neon", conf: ["1s2", "2s2", "2p6"] },
-        { n: 11, sym: "Na", name: "Sodium", conf: ["1s2", "2s2", "2p6", "3s1"] },
-        { n: 12, sym: "Mg", name: "Magnesium", conf: ["1s2", "2s2", "2p6", "3s2"] },
-        { n: 13, sym: "Al", name: "Aluminium", conf: ["1s2", "2s2", "2p6", "3s2", "3p1"] },
-        { n: 14, sym: "Si", name: "Silicon", conf: ["1s2", "2s2", "2p6", "3s2", "3p2"] },
-        { n: 15, sym: "P", name: "Phosphorus", conf: ["1s2", "2s2", "2p6", "3s2", "3p3"] },
-        { n: 16, sym: "S", name: "Sulfur", conf: ["1s2", "2s2", "2p6", "3s2", "3p4"] },
-        { n: 17, sym: "Cl", name: "Chlorine", conf: ["1s2", "2s2", "2p6", "3s2", "3p5"] },
-        { n: 18, sym: "Ar", name: "Argon", conf: ["1s2", "2s2", "2p6", "3s2", "3p6"] },
-        { n: 19, sym: "K", name: "Potassium", conf: ["1s2", "2s2", "2p6", "3s2", "3p6", "4s1"] },
-        { n: 20, sym: "Ca", name: "Calcium", conf: ["1s2", "2s2", "2p6", "3s2", "3p6", "4s2"] }
-    ];
-
-    // Map shells to their specific axis components
-    const subshellMap = {
-        's': [''],
-        'p': ['x', 'y', 'z'],
-        'd': ['xy', 'yz', 'xz', 'x2-y2', 'z2']
-    };
-
-    // State
-    const activeOrbitals = new Set(); // Stores strings like "2px", "3dxy"
-
-    // --- 3D Scene Setup ---
-    const container = document.getElementById('canvas-container');
-    const scene = new THREE.Scene();
-    // Use a slight fog for depth
-    scene.fog = new THREE.FogExp2(0x0f172a, 0.02);
-
-    const camera = new THREE.PerspectiveCamera(50, container.offsetWidth / container.offsetHeight, 0.1, 100);
-    camera.position.set(10, 8, 10);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.offsetWidth, container.offsetHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 2);
-    scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 3);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(0, 0, 0); // Inner glow
-    scene.add(pointLight);
-
-    // Helpers
-    const gridHelper = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
-    scene.add(gridHelper);
-    
-    const axesHelper = new THREE.AxesHelper(2);
-    scene.add(axesHelper);
-
-    // Nucleus
-    const nucleusGeo = new THREE.SphereGeometry(0.2, 16, 16);
-    const nucleusMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 });
-    const nucleus = new THREE.Mesh(nucleusGeo, nucleusMat);
-    scene.add(nucleus);
-
-    // --- Orbital Geometry Factories ---
-    // Materials
-    const matS = new THREE.MeshPhysicalMaterial({ color: 0xef4444, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
-    const matP = new THREE.MeshPhysicalMaterial({ color: 0xeab308, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
-    const matD = new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.2, metalness: 0.1, side: THREE.DoubleSide });
-
-    // Orbital Group Store
-    const orbitalMeshes = {}; // Key: "1s", "2px" etc., Value: THREE.Mesh/Group
-
-    function createOrbital(n, l, type, axis) {
-        const group = new THREE.Group();
-        const scale = n * 1.2; // Relative sizing based on principal quantum number
-
-        if (type === 's') {
-            const geo = new THREE.SphereGeometry(scale * 0.5, 32, 32);
-            const mesh = new THREE.Mesh(geo, matS);
-            group.add(mesh);
-        } 
-        else if (type === 'p') {
-            // P orbital: two lobes (dumbbells)
-            const lobeGeo = new THREE.SphereGeometry(scale * 0.4, 32, 32);
-            lobeGeo.scale(0.7, 1, 0.7); // Elongate slightly
-            
-            const top = new THREE.Mesh(lobeGeo, matP);
-            top.position.y = scale * 0.5;
-            
-            const bottom = new THREE.Mesh(lobeGeo, matP);
-            bottom.position.y = -scale * 0.5;
-            
-            group.add(top, bottom);
-
-            // Rotate based on axis
-            if (axis === 'x') group.rotation.z = Math.PI / 2;
-            if (axis === 'z') group.rotation.x = Math.PI / 2;
-            // y is default
-        } 
-        else if (type === 'd') {
-            // D orbital: clover leaf (4 lobes) or donut (dz2)
-            const lobeSize = scale * 0.35;
-            const lobeGeo = new THREE.SphereGeometry(lobeSize, 32, 32);
-            lobeGeo.scale(0.6, 1.2, 0.6);
-
-            if (axis === 'z2') {
-                // Donut shape
-                const top = new THREE.Mesh(lobeGeo, matD);
-                top.position.y = scale * 0.5;
-                const bottom = new THREE.Mesh(lobeGeo, matD);
-                bottom.position.y = -scale * 0.5;
-                
-                const torusGeo = new THREE.TorusGeometry(lobeSize * 1.2, lobeSize * 0.4, 16, 32);
-                const ring = new THREE.Mesh(torusGeo, matD);
-                ring.rotation.x = Math.PI / 2;
-
-                group.add(top, bottom, ring);
-            } else {
-                // Clover shapes (4 lobes)
-                const lobes = [];
-                for(let i=0; i<4; i++) {
-                    const mesh = new THREE.Mesh(lobeGeo, matD);
-                    lobes.push(mesh);
-                    group.add(mesh);
-                }
-
-                // Position lobes in a generic X shape on XY plane first
-                const dist = scale * 0.5;
-                lobes[0].position.set(dist, dist, 0); lobes[0].rotation.z = -Math.PI/4;
-                lobes[1].position.set(-dist, dist, 0); lobes[1].rotation.z = Math.PI/4;
-                lobes[2].position.set(-dist, -dist, 0); lobes[2].rotation.z = -Math.PI/4;
-                lobes[3].position.set(dist, -dist, 0); lobes[3].rotation.z = Math.PI/4;
-
-                // Rotate group to match specific d-orbital orientation
-                if (axis === 'xz') group.rotation.x = Math.PI / 2;
-                if (axis === 'yz') group.rotation.y = Math.PI / 2;
-                if (axis === 'x2-y2') { /* Default orientation corresponds to xy actually, but x2-y2 is aligned with axes */
-                    group.rotation.z = 0; 
-                    // Adjust positions for on-axis alignment
-                    lobes[0].position.set(dist*1.2, 0, 0); lobes[0].rotation.z = Math.PI/2;
-                    lobes[1].position.set(-dist*1.2, 0, 0); lobes[1].rotation.z = Math.PI/2;
-                    lobes[2].position.set(0, dist*1.2, 0); lobes[2].rotation.z = 0;
-                    lobes[3].position.set(0, -dist*1.2, 0); lobes[3].rotation.z = 0;
-                }
-            }
-        }
+    <!-- Main Diagram Container -->
+    <div class="max-w-5xl w-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl relative">
         
-        return group;
-    }
+        <!-- Controls -->
+        <div class="absolute top-4 left-4 z-10 flex gap-2 bg-slate-950/90 p-2 rounded border border-slate-800 backdrop-blur">
+            <button id="playBtn" onclick="togglePlay()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors flex items-center gap-2 text-sm font-bold w-32 justify-center">
+                <svg id="playIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span id="playText">DEPLOY</span>
+            </button>
+            <button onclick="resetSim()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded text-white transition-colors" title="Reset">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </button>
+            <div id="progressText" class="ml-4 flex items-center text-xs font-mono text-slate-400">
+                0%
+            </div>
+        </div>
 
-    function updateScene() {
-        // Clear old orbitals
-        Object.values(orbitalMeshes).forEach(m => scene.remove(m));
+        <!-- SVG Canvas -->
+        <svg viewBox="0 0 1000 700" class="w-full h-auto max-h-[65vh] bg-[#020617]">
+            
+            <!-- Rock Overburden -->
+            <g fill="#1e293b" stroke="#0f172a" stroke-width="2">
+                <!-- Left Cliff -->
+                <path d="M 0,180 L 220,180 L 190,280 L 210,400 L 180,550 L 0,550 Z" />
+                <!-- Right Ceiling -->
+                <path d="M 330,180 L 1000,180 L 1000,420 L 800,410 L 600,430 L 400,410 L 330,180 Z" />
+                <!-- Cave Floor -->
+                <path d="M 0,550 L 220,550 L 280,560 L 500,540 L 700,560 L 1000,540 L 1000,700 L 0,700 Z" />
+            </g>
+
+            <path d="M 50,220 L 100,270 M 60,400 L 150,420 M 800,250 L 900,300 M 700,600 L 800,650" stroke="#334155" stroke-width="1" stroke-dasharray="4 4" />
+
+            <!-- PART 1: Surface Lander -->
+            <g transform="translate(200, 130)">
+                <rect x="0" y="0" width="100" height="50" fill="#94a3b8" rx="2" />
+                <rect x="25" y="-15" width="50" height="15" fill="#f59e0b" />
+                <rect x="-40" y="10" width="35" height="15" fill="#3b82f6" />
+                <rect x="105" y="10" width="35" height="15" fill="#3b82f6" />
+                <!-- Astronaut standing by lander -->
+                <circle cx="10" cy="-3" r="3" fill="#38bdf8" />
+                <line x1="10" y1="0" x2="10" y2="8" stroke="#38bdf8" stroke-width="2" />
+            </g>
+
+            <!-- The Thick Umbilical Bundle -->
+            <line id="tether" x1="250" y1="180" x2="250" y2="180" stroke="#475569" stroke-width="10" />
+            <!-- Slurry/Elevator Pipe within umbilical -->
+            <line id="slurry-pipe" x1="250" y1="180" x2="250" y2="180" stroke="#38bdf8" stroke-width="2" />
+
+            <!-- PART 2: The Base Station & Flaring Habitat -->
+            
+            <!-- Everted Habitat Group -->
+            <g id="habitat-group" style="display: none;">
+                <!-- Outer Shell (Myco-Crete & Dust) -->
+                <path id="habitat-shell" fill="#cbd5e1" stroke="#64748b" stroke-width="6" stroke-linejoin="round" />
+                <!-- Inner Pressurized Cavity -->
+                <path id="habitat-inner" fill="#0f172a" transform="scale(0.96) translate(15, 20)" stroke="#38bdf8" stroke-width="2" />
+
+                <!-- Internal Smart Floor -->
+                <line id="smart-floor" x1="320" y1="535" x2="320" y2="535" stroke="#3b82f6" stroke-width="4" style="display: none;" />
+
+                <!-- Internal Modular Housing & Astronauts -->
+                <g id="modules" transform="translate(400, 495)" class="animate-pulse-slow" style="display: none;">
+                    <rect x="0" y="0" width="60" height="40" fill="#f8fafc" rx="4" />
+                    <rect x="10" y="10" width="20" height="15" fill="#cbd5e1" rx="2" />
+                    <rect x="80" y="0" width="60" height="40" fill="#f8fafc" rx="4" />
+                    <rect x="90" y="10" width="20" height="15" fill="#cbd5e1" rx="2" />
+                    <!-- Tiny Astronauts (11px tall = ~1.8m) -->
+                    <g fill="#38bdf8">
+                        <circle cx="70" cy="35" r="2" />
+                        <rect x="69" y="37" width="2" height="6" />
+                        <line x1="69" y1="43" x2="67" y2="48" stroke="#38bdf8" stroke-width="2" />
+                        <line x1="71" y1="43" x2="73" y2="48" stroke="#38bdf8" strokeWidth="2" />
+                    </g>
+                    <g fill="#38bdf8" transform="translate(80, 0)">
+                        <circle cx="70" cy="35" r="2" />
+                        <rect x="69" y="37" width="2" height="6" />
+                        <line x1="69" y1="43" x2="67" y2="48" stroke="#38bdf8" stroke-width="2" />
+                        <line x1="71" y1="43" x2="73" y2="48" stroke="#38bdf8" strokeWidth="2" />
+                    </g>
+                </g>
+            </g>
+
+            <!-- The Base Station Canister -->
+            <g id="canister" transform="translate(238, 180)">
+                <!-- Main Body -->
+                <rect x="0" y="0" width="24" height="36" fill="#e2e8f0" rx="3" />
+                <rect x="2" y="2" width="20" height="32" fill="#94a3b8" rx="2" />
+                <!-- Anchors (Deploy when landed) -->
+                <g id="canister-anchors" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" style="display: none;">
+                    <line x1="5" y1="36" x2="-10" y2="51" />
+                    <line x1="19" y1="36" x2="34" y2="51" />
+                </g>
+                <!-- Side Hatch (Opens for eversion) -->
+                <rect id="canister-hatch" x="22" y="10" width="4" height="20" fill="#0f172a" style="display: none;" />
+            </g>
+
+            <!-- Interactive Callout Markers -->
+            <!-- Callout 1 -->
+            <g class="callout-group cursor-pointer" transform="translate(230, 350)">
+                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                <text x="0" y="4" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="bold" font-family="monospace">1</text>
+                <g class="tooltip-box z-50" transform="translate(20, -40)">
+                    <rect x="0" y="0" width="250" height="100" fill="#020617" stroke="#38bdf8" rx="6" />
+                    <text x="12" y="22" fill="#38bdf8" font-size="13" font-weight="bold">1. Umbilical & Elevator Track</text>
+                    <foreignObject x="12" y="32" width="226" height="65">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="text-[11px] text-slate-300 leading-tight">
+                            Not just a wire. This heavy-duty bundle carries structural tethers, the Myco-Crete bio-slurry pump, and serves as the vertical track for the pressurized Elevator Pod allowing astronauts surface access.
+                        </div>
+                    </foreignObject>
+                </g>
+            </g>
+
+            <!-- Callout 2 -->
+            <g class="callout-group cursor-pointer" transform="translate(200, 550)">
+                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                <text x="0" y="4" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="bold" font-family="monospace">2</text>
+                <g class="tooltip-box z-50" transform="translate(20, -60)">
+                    <rect x="0" y="0" width="250" height="90" fill="#020617" stroke="#38bdf8" rx="6" />
+                    <text x="12" y="22" fill="#38bdf8" font-size="13" font-weight="bold">2. Airlock Base Station</text>
+                    <foreignObject x="12" y="32" width="226" height="55">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="text-[11px] text-slate-300 leading-tight">
+                            The canister acts as an anchor and a 90-degree airlock junction. It bridges the vertical elevator shaft and the massive horizontal habitat.
+                        </div>
+                    </foreignObject>
+                </g>
+            </g>
+
+            <!-- Callout 3 -->
+            <g class="callout-group cursor-pointer" transform="translate(380, 410)">
+                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                <text x="0" y="4" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="bold" font-family="monospace">3</text>
+                <g class="tooltip-box z-50" transform="translate(20, -40)">
+                    <rect x="0" y="0" width="250" height="90" fill="#020617" stroke="#38bdf8" rx="6" />
+                    <text x="12" y="22" fill="#38bdf8" font-size="13" font-weight="bold">3. Flaring Eversion</text>
+                    <foreignObject x="12" y="32" width="226" height="55">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="text-[11px] text-slate-300 leading-tight">
+                            The fabric exits the narrow 4m canister and immediately flares outward under 1 ATM of pressure, expanding to a massive 20m diameter cavern.
+                        </div>
+                    </foreignObject>
+                </g>
+            </g>
+
+            <!-- Callout 4 -->
+            <g class="callout-group cursor-pointer" transform="translate(750, 500)">
+                <circle cx="0" cy="0" r="14" fill="#0f172a" stroke="#38bdf8" stroke-width="2" />
+                <text x="0" y="4" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="bold" font-family="monospace">4</text>
+                <g class="tooltip-box z-50" transform="translate(-270, -40)">
+                    <rect x="0" y="0" width="250" height="90" fill="#020617" stroke="#38bdf8" rx="6" />
+                    <text x="12" y="22" fill="#38bdf8" font-size="13" font-weight="bold">4. Internal Scale</text>
+                    <foreignObject x="12" y="32" width="226" height="55">
+                        <div xmlns="http://www.w3.org/1999/xhtml" class="text-[11px] text-slate-300 leading-tight">
+                            At 20m wide, the interior easily fits a flat 'Smart Floor' and standard-sized living modules, giving astronauts a massive, safe volume.
+                        </div>
+                    </foreignObject>
+                </g>
+            </g>
+            
+        </svg>
+    </div>
+
+    <!-- Narrative Legend -->
+    <div class="max-w-5xl w-full mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
+            <h3 class="text-blue-400 font-bold mb-2 flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                Part 1: The Umbilical & Elevator
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                The line lowering the canister is an industrial-grade umbilical. It provides the structural strength to lower the payload, contains hoses that pump the bio-slurry down, and acts as the vertical track for a pressurized astronaut elevator pod. 
+            </p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl">
+            <h3 class="text-blue-400 font-bold mb-2 flex items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                Part 2: The Flaring Junction
+            </h3>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Notice the canister at the bottom. It doesn't stretch or bend; it anchors in place to become the primary airlock. The side hatch opens, and the habitat <strong class="text-white">balloons out of it</strong>, flaring under pressure until it locks against the 20m wide cave walls.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let progress = 0;
+        let isPlaying = false;
+        let interval;
+
+        // Constants for coordinate mapping
+        const surfaceY = 200;
+        const pitFloorY = 550;
+        const habitatCenterY = 490; 
+        const canisterWidth = 24;
+        const canisterHeight = 36;
+
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+        const playText = document.getElementById('playText');
+        const progressText = document.getElementById('progressText');
         
-        // Add active ones
-        activeOrbitals.forEach(id => {
-            if (!orbitalMeshes[id]) {
-                // Parse ID: e.g., "2px", "3dxy", "1s"
-                const n = parseInt(id[0]);
-                const type = id[1];
-                const axis = id.substring(2); // can be empty, x, y, z, xy, etc.
-                orbitalMeshes[id] = createOrbital(n, null, type, axis);
-            }
-            scene.add(orbitalMeshes[id]);
-        });
-    }
+        // Pause Icon SVG string
+        const pauseSvg = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+        // Play Icon SVG string
+        const playSvg = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+        // Replay Icon SVG string
+        const replaySvg = '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path>';
 
-    // --- UI Logic ---
-    
-    // 1. Fill Element Selector
-    const select = document.getElementById('element-select');
-    elements.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e.n;
-        opt.textContent = `${e.n}. ${e.sym} - ${e.name}`;
-        select.appendChild(opt);
-    });
-
-    // 2. Build Aufbau Grid
-    // We need rows for shells 1, 2, 3, 4
-    const configLayout = [
-        { n: 4, sub: ['s'] }, // Simplified for first 20 elements (Ca ends at 4s)
-        { n: 3, sub: ['d', 'p', 's'] }, // 3d technically exists but empty for Z<=20
-        { n: 2, sub: ['p', 's'] },
-        { n: 1, sub: ['s'] }
-    ];
-    
-    const grid = document.getElementById('aufbau-grid');
-
-    configLayout.forEach(row => {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'shell-row';
-        
-        const label = document.createElement('div');
-        label.className = 'shell-label';
-        label.textContent = row.n;
-        rowDiv.appendChild(label);
-
-        // Reverse subshells to render s on left visually if desired, 
-        // but Aufbau usually shows energies. 
-        // Let's stick to reading left-to-right s, p, d.
-        const sortedSub = ['s', 'p', 'd'].filter(x => row.sub.includes(x));
-
-        sortedSub.forEach(type => {
-            // Don't render 3d for this specific <20 element visualizer to keep UI clean,
-            // but prompt asked for 3d config map capability.
-            // Let's include 3d just for interactivity demo even if not filled by Ca.
+        function togglePlay() {
+            isPlaying = !isPlaying;
             
-            const btnGroup = document.createElement('div');
-            btnGroup.className = 'subshell-group';
-            
-            // Create Main Button (e.g., "2p")
-            const btn = document.createElement('button');
-            btn.className = `orbital-btn btn-${type}`;
-            btn.textContent = `${row.n}${type}`;
-            btn.dataset.id = `${row.n}${type}`; // Broad ID
-            
-            // Sub-selector (tooltip)
-            const subMenu = document.createElement('div');
-            subMenu.className = 'sub-selector';
-            
-            const axes = subshellMap[type];
-            axes.forEach(axis => {
-                const checkRow = document.createElement('label');
-                checkRow.className = 'axis-check';
+            if (isPlaying) {
+                if (progress >= 100) progress = 0;
                 
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.dataset.fullId = `${row.n}${type}${axis}`; // e.g., 2px
-                
-                // Clicking checkbox toggles specific orbital
-                cb.addEventListener('change', (e) => {
-                    if (e.target.checked) activeOrbitals.add(e.target.dataset.fullId);
-                    else activeOrbitals.delete(e.target.dataset.fullId);
+                interval = setInterval(() => {
+                    progress = Math.min(progress + 0.5, 100);
+                    render();
                     
-                    updateBtnState(btn, subMenu);
-                    updateScene();
-                });
+                    if (progress >= 100) {
+                        isPlaying = false;
+                        clearInterval(interval);
+                        updateBtnUI();
+                    }
+                }, 50);
+            } else {
+                clearInterval(interval);
+            }
+            updateBtnUI();
+        }
 
-                checkRow.appendChild(cb);
-                checkRow.appendChild(document.createTextNode(axis || 'Total'));
-                subMenu.appendChild(checkRow);
-            });
+        function resetSim() {
+            isPlaying = false;
+            clearInterval(interval);
+            progress = 0;
+            render();
+            updateBtnUI();
+        }
 
-            btn.appendChild(subMenu);
+        function updateBtnUI() {
+            progressText.innerText = Math.floor(progress) + "%";
             
-            // Interaction Logic
-            btn.addEventListener('click', (e) => {
-                // If clicking the button (not the checkbox inside), toggle all sub-orbitals
-                if (e.target !== btn) return; 
-
-                // Check if all are currently active
-                const allIds = axes.map(a => `${row.n}${type}${a}`);
-                const allActive = allIds.every(id => activeOrbitals.has(id));
-
-                if (allActive) {
-                    // Turn all off
-                    allIds.forEach(id => activeOrbitals.delete(id));
+            if (isPlaying) {
+                playIcon.innerHTML = pauseSvg;
+                playText.innerText = "PAUSE";
+                playBtn.classList.replace('bg-blue-600', 'bg-red-600');
+                playBtn.classList.replace('hover:bg-blue-500', 'hover:bg-red-500');
+            } else {
+                playBtn.classList.replace('bg-red-600', 'bg-blue-600');
+                playBtn.classList.replace('hover:bg-red-500', 'hover:bg-blue-500');
+                if (progress >= 100) {
+                    playIcon.innerHTML = replaySvg;
+                    playText.innerText = "REPLAY";
                 } else {
-                    // Turn all on
-                    allIds.forEach(id => activeOrbitals.add(id));
+                    playIcon.innerHTML = playSvg;
+                    playText.innerText = "DEPLOY";
                 }
+            }
+        }
+
+        // Logic to calculate the ballooning / flaring path of the habitat
+        function getHabitatPath() {
+            if (progress <= 30) return "";
+            const expansion = Math.min(1, (progress - 30) / 50); // 0 to 1
+            
+            const startX = 264; // Right side of the landed canister
+            const startTopY = pitFloorY - 25; // Hatch top
+            const startBotY = pitFloorY - 5;  // Hatch bottom
+            
+            const maxRadius = 60; // 20m diameter = 120px height
+            const maxTopY = habitatCenterY - maxRadius; 
+            const maxBotY = habitatCenterY + maxRadius; 
+            const flareDistance = 70; // 12m to fully flare
+            
+            const currentX = startX + (expansion * 580); 
+            
+            if (currentX <= startX + flareDistance) {
+                // Stage A: Expanding Flare
+                const ratio = (currentX - startX) / flareDistance;
+                const curRadius = 10 + (ratio * 50); 
+                const curTopY = habitatCenterY - curRadius;
+                const curBotY = habitatCenterY + curRadius;
                 
-                // Sync checkboxes
-                updateBtnState(btn, subMenu);
-                updateScene();
-            });
-
-            // Hover to show sub-selector
-            btn.addEventListener('mouseenter', () => subMenu.classList.add('show'));
-            btn.addEventListener('mouseleave', () => subMenu.classList.remove('show'));
-
-            btnGroup.appendChild(btn);
-            rowDiv.appendChild(btnGroup);
-        });
-
-        grid.appendChild(rowDiv);
-    });
-
-    function updateBtnState(btn, subMenu) {
-        const checkboxes = subMenu.querySelectorAll('input');
-        let checkedCount = 0;
-        checkboxes.forEach(cb => {
-            if (activeOrbitals.has(cb.dataset.fullId)) {
-                cb.checked = true;
-                checkedCount++;
+                return `M ${startX},${startTopY} 
+                        Q ${startX + ratio*35},${curTopY} ${currentX},${curTopY} 
+                        A ${curRadius},${curRadius} 0 0,1 ${currentX},${curBotY} 
+                        Q ${startX + ratio*35},${curBotY} ${startX},${startBotY} Z`;
             } else {
-                cb.checked = false;
+                // Stage B: Fully Flared, rolling horizontally
+                return `M ${startX},${startTopY} 
+                        Q ${startX + 35},${maxTopY} ${startX + flareDistance},${maxTopY} 
+                        L ${currentX},${maxTopY} 
+                        A ${maxRadius},${maxRadius} 0 0,1 ${currentX},${maxBotY} 
+                        L ${startX + flareDistance},${maxBotY} 
+                        Q ${startX + 35},${maxBotY} ${startX},${startBotY} Z`;
             }
-        });
+        }
 
-        if (checkedCount > 0) btn.classList.add('active');
-        else btn.classList.remove('active');
-    }
+        function render() {
+            progressText.innerText = Math.floor(progress) + "%";
 
-    // --- Element Selection Logic ---
-    select.addEventListener('change', (e) => {
-        const z = parseInt(e.target.value);
-        if (!z) return;
+            // Phase 1: Descent Calculation
+            const dropProgress = Math.min(progress, 30) / 30;
+            const canisterY = surfaceY - 10 + (dropProgress * (pitFloorY - canisterHeight - surfaceY + 10));
 
-        // Clear current
-        activeOrbitals.clear();
-
-        // Determine orbitals based on simple config rules for Z 1-20
-        // Config: 1s, 2s, 2p, 3s, 3p, 4s
-        const limits = { '1s': 2, '2s': 2, '2p': 6, '3s': 2, '3p': 6, '4s': 2 };
-        let electrons = z;
-        
-        const subshellsOrder = ['1s', '2s', '2p', '3s', '3p', '4s'];
-        
-        subshellsOrder.forEach(ss => {
-            if (electrons <= 0) return;
+            // Update DOM Elements
+            document.getElementById('tether').setAttribute('y2', canisterY);
             
-            const n = ss[0];
-            const type = ss[1];
-            const capacity = limits[ss];
-            const fill = Math.min(electrons, capacity);
-            
-            // Logic to distribute electrons into orbitals (Hund's rule simplified)
-            // We just activate the orbital geometry if there is an electron in that axis
-            const axes = subshellMap[type];
-            
-            // For s, it's just one
-            if (type === 's') {
-                activeOrbitals.add(`${n}s`);
+            const slurryPipe = document.getElementById('slurry-pipe');
+            slurryPipe.setAttribute('y2', canisterY);
+            if(isPlaying) {
+                slurryPipe.setAttribute('stroke-dasharray', '10 5');
+                slurryPipe.classList.add('animate-dash');
             } else {
-                // For p, fill x, then y, then z
-                for (let i = 0; i < Math.ceil(fill/2); i++) {
-                     // /2 because each orbital holds 2 e-, but geometry exists if at least 1 e-
-                     if (i < axes.length) activeOrbitals.add(`${n}${type}${axes[i]}`);
-                }
+                slurryPipe.setAttribute('stroke-dasharray', 'none');
+                slurryPipe.classList.remove('animate-dash');
             }
-            
-            electrons -= fill;
-        });
 
-        // Update UI
-        document.querySelectorAll('.orbital-btn').forEach(btn => {
-            const subMenu = btn.querySelector('.sub-selector');
-            updateBtnState(btn, subMenu);
-        });
-        
-        updateScene();
-    });
+            document.getElementById('canister').setAttribute('transform', `translate(238, ${canisterY})`);
 
+            // Phase 2: Flaring and Habitat Visibility
+            if (progress > 30) {
+                document.getElementById('habitat-group').style.display = 'block';
+                document.getElementById('canister-anchors').style.display = 'block';
+                document.getElementById('canister-hatch').style.display = 'block';
 
-    // --- Animation Loop ---
-    function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-    }
+                const pathData = getHabitatPath();
+                document.getElementById('habitat-shell').setAttribute('d', pathData);
+                document.getElementById('habitat-inner').setAttribute('d', pathData);
+            } else {
+                document.getElementById('habitat-group').style.display = 'none';
+                document.getElementById('canister-anchors').style.display = 'none';
+                document.getElementById('canister-hatch').style.display = 'none';
+            }
 
-    // Handle Resize
-    window.addEventListener('resize', () => {
-        camera.aspect = document.getElementById('canvas-container').offsetWidth / document.getElementById('canvas-container').offsetHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(document.getElementById('canvas-container').offsetWidth, document.getElementById('canvas-container').offsetHeight);
-    });
+            // Floor Visibility
+            if (progress > 60) {
+                document.getElementById('smart-floor').style.display = 'block';
+                const expansion = Math.min(1, (progress - 30) / 50);
+                document.getElementById('smart-floor').setAttribute('x2', (264 + (expansion * 580)) - 40);
+            } else {
+                document.getElementById('smart-floor').style.display = 'none';
+            }
 
-    animate();
+            // Modules Visibility
+            if (progress > 85) {
+                document.getElementById('modules').style.display = 'block';
+            } else {
+                document.getElementById('modules').style.display = 'none';
+            }
+        }
 
-</script>
+        // Initial Render
+        render();
+
+    </script>
 </body>
 </html>
